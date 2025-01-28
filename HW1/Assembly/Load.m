@@ -1,9 +1,9 @@
 function [f] = Load(force, dphiq, BJ, w_1D, pphys_1D, nln)
 %% [f] = Load(force,dphiq,BJ,w_1D,pphys_1D,nln)
 %==========================================================================
-% Build the right hand side vector (f)
+% Build the right hand side vector (fv)
 %==========================================================================
-%    called in Matrix1D.m
+%    called in C_matrix1D.m
 %
 %    INPUT:
 %          force       : (string) expression of the forcing term
@@ -15,7 +15,7 @@ function [f] = Load(force, dphiq, BJ, w_1D, pphys_1D, nln)
 %          nln         : (integer) number of local unknowns
 %
 %    OUTPUT:
-%          f           : (array real,Nt) Local right hand side
+%          f           : (array real) Local right hand side
 
 
 f = zeros(nln,1);

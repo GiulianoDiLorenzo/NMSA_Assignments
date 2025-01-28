@@ -6,7 +6,7 @@ function [solutions]=PostProcessing(Data,femregion,uh)
 %    called in Main.m
 %
 %    INPUT:
-%          Data        : (struct)  see DataTest.m
+%          Datia       : (struct)  see DataTest.m
 %          femregion   : (struct)  see CreateFemregion.m
 %          uh          : (sparse(ndof,1) real) solution vector
 %
@@ -15,7 +15,7 @@ function [solutions]=PostProcessing(Data,femregion,uh)
 %                        analytical solution u_ex
 %
 
-fprintf('Plot the solution ... \n');
+fprintf('Solve the linear system and plot the solution ... \n');
 
 
 %==========================================================================
@@ -24,7 +24,7 @@ fprintf('Plot the solution ... \n');
 
 dof = femregion.dof;
 x = dof(:,1);
-u_ex = Data.uex(x,Data.omega,Data.ro,Data.vel);
+u_ex = Data.uex(x);
 
 
 %==========================================================================

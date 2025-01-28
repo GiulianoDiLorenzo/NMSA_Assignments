@@ -3,7 +3,7 @@ function [M_loc]=Mass(dphiq,w_1D,nln,BJ)
 %==========================================================================
 % Build the local mass matrix for the term (uv)
 %==========================================================================
-%    called in Matrix1D.m
+%    called in C_matrix1D.m
 %
 %    INPUT:
 %          dphiq       : (array real) evaluation of the basis function on

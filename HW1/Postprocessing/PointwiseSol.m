@@ -21,11 +21,11 @@ end
 
 figure;
 plot(femregion.coord(:,1),full(uh));
-title(''); xlabel('x-axis'); ylabel('y-axis');
+title('u_h(x)'); xlabel('x-axis'); ylabel('y-axis');
 
 if(min(u_ex) ~= 0 && max(u_ex) ~= 0)
     hold on;
     plot(femregion.coord(:,1),u_ex,'r*');
-    legend('p_h', 'p');
+    legend('u_h', 'u', 'Interpreter', 'Latex');
 end
 

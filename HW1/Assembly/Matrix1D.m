@@ -1,5 +1,5 @@
-function [A,M]=Matrix1D(Data,femregion)
-%% [A,M] = Matrix1D(Data,Femregion)
+function [A,f]=Matrix1D(Data,femregion)
+%% [A,f] = Matrix1D(Data,Femregion)
 %==========================================================================
 % Assembly of the stiffness matrices A and rhs f
 %==========================================================================
@@ -11,10 +11,10 @@ function [A,M]=Matrix1D(Data,femregion)
 %
 %    OUTPUT:
 %          A           : (sparse(ndof,ndof) real) stiffnes matrix
-%          M           : (sparse(ndof,ndof) real) mass matrix
+%          f           : (sparse(ndof,1) real) rhs vector
 
 
-fprintf('Assembling the matrices M and A... \n');
+fprintf('Assembling matrices and right hand side ... \n');
 
 
 % connectivity infos
@@ -38,12 +38,14 @@ connectivity = femregion.connectivity; % connectivity matrix
 A = sparse(ndof,ndof);  % Global Stiffness matrix
 M = sparse(ndof,ndof);  % Global mass matrix
 
+f = sparse(ndof,1);     % Global Load vector
+
 for ie = 1 : ne
      
     % Local to global map --> To be used in the assembly phase
     iglo = connectivity(1:nln,ie);
   
-    [BJ, ~] = GetJacobian(femregion.coord(iglo,:), nodes_1D);
+    [BJ, nodes_1D_phys] = GetJacobian(femregion.coord(iglo,:), nodes_1D);
     % BJ        = Jacobian of the elemental map 
     % pphys_1D  = vertex coordinates in the physical domain 
    
@@ -51,7 +53,7 @@ for ie = 1 : ne
     % STIFFNESS MATRIX
     %=============================================================%
     
-    % Local stiffness matrix (phi',phi')
+    % Local stiffness matrix 
     [A_loc] = Stiffness(GradPhi, w_1D, nln, BJ);
 
     % Assembly phase for stiffness matrix
@@ -61,22 +63,23 @@ for ie = 1 : ne
     % MASS MATRIX
     %=============================================================%
     
-    % Local mass matrix (phi,phi)
+    % Local mass matrix 
     [M_loc] = Mass(Phi, w_1D, nln, BJ);
 
     % Assembly phase for mass matrix
     M(iglo,iglo) = M(iglo,iglo) + M_loc;   
     
-%     %==============================================
-%     % FORCING TERM --RHS
-%     %==============================================
-% 
-%     % Local load vector
-%     [load] = Load(Data.force, Phi, BJ, w_1D, nodes_1D_phys, nln);    
-% 
-%     % Assembly phase for the load vector
-%     f(iglo) = f(iglo) + load;
+    %==============================================
+    % FORCING TERM --RHS
+    %==============================================
+
+    % Local load vector
+    [load] = Load(Data.force, Phi, BJ, w_1D, nodes_1D_phys, nln);    
+
+    % Assembly phase for the load vector
+    f(iglo) = f(iglo) + load;
 
 end
 
 
+A = Data.mu*A + Data.sigma*M;

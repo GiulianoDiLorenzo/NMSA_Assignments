@@ -22,7 +22,7 @@ ne = femregion.ne;
 [basis] = ShapeBasis;
 
 % quadrature nodes and weights for integrals
-[nodes_1D, w_1D] = Quadrature(3);
+[nodes_1D, w_1D] = Quadrature(2);
 
 % evaluation of shape bases on quadrature nodes
 [Phi,GradPhi] = EvalShapeBasis(basis,nodes_1D);
@@ -45,8 +45,8 @@ E_L2_LOC = zeros(ne,1);
     
     % Solution and gradient at physical nodes x
 	
-    uex_loc = Data.uex(x,Data.omega,Data.ro,Data.vel);
-    grad_uex_loc = Data.graduex(x,Data.omega,Data.ro,Data.vel)';
+    uex_loc = Data.uex(x);
+    grad_uex_loc = Data.graduex(x)';
        
     % Approximated solution and gradient at quadrature nodes
     grad_uh_loc = zeros(length(w_1D),1);
@@ -67,7 +67,7 @@ E_L2_LOC = zeros(ne,1);
  
         pointwise_diff(k,:) = (grad_uex_loc(k,:))-(grad_uh_loc(k,:)*Binv);
         E_SEMI_H1_LOC(ie)= E_SEMI_H1_LOC(ie) + (pointwise_diff(k,:) * transpose(pointwise_diff(k,:))).*dx;
-        E_L2_LOC(ie) = E_L2_LOC(ie) + ((uh_loc(k)-uex_loc(k)).^2).*dx;
+        E_L2_LOC(ie)=E_L2_LOC(ie) + ((uh_loc(k)-uex_loc(k)).^2).*dx;
     end
 end
 

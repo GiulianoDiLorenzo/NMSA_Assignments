@@ -1,5 +1,5 @@
 function [A,b,u_g] = BoundaryConditions(A,b,femregion,Data)
-%% [A,b,u_g] = BoundaryConditions(A,b,femregion,Data,t)
+%% [A,b,u_g] = BoundaryConditions(A,b,femregion,Data)
 %==========================================================================
 % Assign Dirchlet boundary conditions
 %==========================================================================
@@ -18,25 +18,22 @@ function [A,b,u_g] = BoundaryConditions(A,b,femregion,Data)
 %          u_g         : (sparse(ndof,1) real) evaluation of Dirichlet conditions 
 %
 
+fprintf('Assign Dirichlet boundary conditions ... \n');
+
 
 ndof = length(b);
 u_g = sparse(ndof,1);
 
 if strcmp(Data.boundary,'DD')   
     boundary_points = femregion.boundary_points;
-    x = femregion.dof(boundary_points,1);
-    u_g(boundary_points(1)) = Data.gD1(Data.omega,Data.ro,Data.vel); 
-    u_g(boundary_points(2)) = Data.gD2(Data.omega,Data.ro,Data.vel);
-elseif strcmp(Data.boundary(1),'D') 
+elseif strcmp(Data.boundary,'DN') 
     boundary_points = femregion.boundary_points(1);
-    x = femregion.dof(boundary_points,1);
-    u_g(boundary_points(1)) = Data.gD1(Data.omega,Data.ro,Data.vel); 
-elseif strcmp(Data.boundary(2),'D')
+elseif strcmp(Data.boundary,'ND')
     boundary_points = femregion.boundary_points(end);  
-    x = femregion.dof(boundary_points,1);
-    u_g(boundary_points(1)) = Data.gD2(Data.omega,Data.ro,Data.vel); 
 end
 
+x = femregion.dof(boundary_points,1);
+u_g(boundary_points) = Data.gD(x); % Compute the lifting operator ug
 
 A_0 = A;
 b_0 = b-A*u_g; % modify the load vector --> F(v) = F(v) - a(ug,v)
