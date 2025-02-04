@@ -1,20 +1,18 @@
-% Solution and error of the wave equation by finite difference method
-%
-%    u_tt - c^2 u_xx = 0
-%           or
-%   rho u_tt - (mu u_x)_x = 0
-%
-% x \in I=[0,L]  and  t \in [0,T] with the
-% initial data  u(x,0) = u0(x) and v(x,0) = v0(x)
-% and Dirichlet boundary conditions u(0,t) = g1(t)
-% and u(L,t) = g2(t)
-%   
-%   Finite difference methods:
-%   Euler forward for time / central for space
-%   Lax-Friedrichs
-%   Lax-Wendroff
-%   Upwind
+% Solution of HOMEWORK 2
+%     S utt = gamma^2 (S ux)x + f
+%     S(x) variable cross-section
+%     f(x) force
+%     u(x,t) solution
 
+% Neumann conditions
+%     ux(0) = ux(1) = 0
+% 
+% Initial profile and derivative
+%     u(x,0), u_t(x,0)
+
+% Finite difference method (SIMPLIFIED VERSION)
+%     u(k,n+1) - 2*u(k,n) + u(k,n-1) = 
+%     = lambda^2 *(u(k+1,n) - 2*u(x,n) + u(k-1,n)) + f(k,n)
 
 clear; close all
 
@@ -23,9 +21,9 @@ clear; close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % exact solution for computing the error
-u  = @(x,t) sin(2*pi*x)*sin(2*pi*t);
-ut = @(x,t) 2*pi*sin(2*pi*x)*cos(2*pi*t);
-ux = @(x,t) 2*pi*cos(2*pi*x)*sin(2*pi*t);
+u  = @(x,t) ...;
+ut = @(x,t) ...;
+ux = @(x,t) ...;
 
 
 % velocity
@@ -34,23 +32,24 @@ a1 =  c;
 a2 = -c;
 
 % Initial data
-u0  = @(x) 0.*x;
+u0  = @(x) ...;     % u(x,0)
+ut0 = @(x) ...;     % u_t(x,0)
 
-% Initial conditions for system u_t = A u_x  (u_t + A u_x = 0)
-v0  = @(x) 2*pi*sin(2*pi*x); % u_t(t=0)
-up0 = @(x) 0.*x;             % u_x(t=0)
+% % Initial conditions for system u_t = A u_x  (u_t + A u_x = 0)
+% v0  = @(x) 2*pi*sin(2*pi*x); % u_t(t=0)
+% up0 = @(x) 0.*x;             % u_x(t=0)
 
-% Initial conditions for w_t = D w_x  (w_t + D w_x = 0)
-% by using the transformation w(x,0) = T^(-1) u(x,0)
+% % Initial conditions for w_t = D w_x  (w_t + D w_x = 0)
+% % by using the transformation w(x,0) = T^(-1) u(x,0)
+% 
+% w0 = @(x) sqrt(1+c^2)/(2*c).*( 2*pi*sin(2*pi*x));
+% w1 = @(x) sqrt(1+c^2)/(2*c).*(-2*pi*sin(2*pi*x));
 
-w0 = @(x) sqrt(1+c^2)/(2*c).*( 2*pi*sin(2*pi*x));
-w1 = @(x) sqrt(1+c^2)/(2*c).*(-2*pi*sin(2*pi*x));
-
-%boundary conditions
+% Neumann boundary conditions
 gp1 = @(t) 0.*t;
 gp2 = @(t) 0.*t;
 
-% Intervals
+% Space domain (0,1) and time domain (0,T)
 T = 5;
 I = [0 1];
 
@@ -75,8 +74,8 @@ NX = 400;
 flag = 3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dt = T/NT;
-dx = (I(2)-I(1))/NX;
+dt = T/NT;              % time step (Delta t)
+dx = (I(2)-I(1))/NX;    % mesh size (h)
 lambda = dt/dx;
 
 % Initial conditions
@@ -89,7 +88,7 @@ lambda = dt/dx;
 SOL_w = zeros(2*(NX+1),NT+1);
 SOL_u = zeros(2*(NX+1),NT+1);
 
-
+% initial values
 for j = 1 : NX+1
     SOL_w(j,1)      = w0(I(1) + (j-1)*dx);
     SOL_w(NX+1+j,1) = w1(I(1) + (j-1)*dx);
@@ -100,26 +99,28 @@ end
 
 
 for n = 1:NT
-    for j = 2:NX
+    for k = 2:NX
         
-        if flag == 1 % FCE scheme
-            SOL_w(j,n+1)      = SOL_w(j,n)      - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
-            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); % w_2
-        elseif flag == 2 % LF scheme
-            SOL_w(j,n+1)      = 0.5*(SOL_w(j+1,n)+SOL_w(j-1,n))           - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
-            SOL_w(NX+1+j,n+1) = 0.5*(SOL_w(NX+1+j+1,n)+SOL_w(NX+1+j-1,n)) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); %w_2
-        elseif flag == 3 % LW scheme
-            SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
-                              + 0.5*lambda^2*a1^2*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
-            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
-                              + 0.5*lambda^2*a2^2*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
-        elseif flag == 4 % UPWIND
-            SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
-                              + 0.5*lambda*abs(a1)*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
-            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
-                              + 0.5*lambda*abs(a2)*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
-                          
-        end
+        % if flag == 1 % FCE scheme
+        %     SOL_w(j,n+1)      = SOL_w(j,n)      - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
+        %     SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); % w_2
+        % elseif flag == 2 % LF scheme
+        %     SOL_w(j,n+1)      = 0.5*(SOL_w(j+1,n)+SOL_w(j-1,n))           - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
+        %     SOL_w(NX+1+j,n+1) = 0.5*(SOL_w(NX+1+j+1,n)+SOL_w(NX+1+j-1,n)) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); %w_2
+        % elseif flag == 3 % LW scheme
+        %     SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
+        %                       + 0.5*lambda^2*a1^2*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
+        %     SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
+        %                       + 0.5*lambda^2*a2^2*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
+        % elseif flag == 4 % UPWIND
+        %     SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
+        %                       + 0.5*lambda*abs(a1)*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
+        %     SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
+        %                       + 0.5*lambda*abs(a2)*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
+        % 
+        % end
+
+        SOL_u(k,n+1) = lambda^2 *(SOL_u(k+1,n) - 2*SOL_u(k,n) + SOL_u(k-1,n)) + F(k,n) + 2*SOL_u(k,n) - SOL_u(k,n-1);
     end
     
     % Boundary conditions
