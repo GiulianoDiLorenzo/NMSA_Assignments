@@ -20,12 +20,13 @@ if (abs(m - M) < 0.1)
 end
 
 figure;
-plot(femregion.coord(:,1),full(uh));
-title('u_h(x)'); xlabel('x-axis'); ylabel('y-axis');
+plot(femregion.coord(:,1),full(real(uh)));
+title(['Solution comparison, h=', num2str(femregion.h)]); xlabel('x-axis'); ylabel('y-axis');
 
 if(min(u_ex) ~= 0 && max(u_ex) ~= 0)
     hold on;
     plot(femregion.coord(:,1),u_ex,'r*');
     legend('u_h', 'u', 'Interpreter', 'Latex');
+    grid on;
 end
 

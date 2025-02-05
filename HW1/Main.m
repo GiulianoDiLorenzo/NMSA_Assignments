@@ -39,7 +39,7 @@ fprintf(['Solving test ', Data.name, ' with ',num2str(nEl),' elements \n']);
 %==========================================================================
 u_g = 0;
 if (strcmp(Data.boundary,'DD') || strcmp(Data.boundary,'DN') ...
-        || strcmp(Data.boundary,'ND')) 
+        || strcmp(Data.boundary,'ND')||strcmp(Data.boundary, 'DR'))
     [A,b,u_g] = BoundaryConditions(A_no_bc, b_no_bc,Femregion,Data);
 else
     A = A_no_bc;

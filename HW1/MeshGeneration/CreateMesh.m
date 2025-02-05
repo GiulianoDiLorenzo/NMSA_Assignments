@@ -27,10 +27,10 @@ xL = Data.domain(2);
 
 %================================================
 % Geometrical info
- nVert = nEl + 1;
- p = linspace(x0,xL,nVert);
- t = [[1:nVert-1]' [2:nVert]']';
- MeshSize = (xL-x0)./nEl;
+ nVert = nEl + 1;                   % vertices of the mesh
+ p = linspace(x0,xL,nVert);         % points of the mesh
+ t = [[1:nVert-1]' [2:nVert]']';    % intervals of the mesh, in terms of indexes
+ MeshSize = (xL-x0)./nEl;           % mesh size of the domain
 %================================================
 
 % Mesh data structure
@@ -39,8 +39,8 @@ Region = struct('dim',1,...
                'h',MeshSize,...
                'nvert',nVert,...
                'ne',nEl,...
-               'coord',p',...
+               'coord',p',...               %coordinates of the mesh points
                'boundary_points',[x0,xL],...
-               'connectivity',t);
+               'connectivity',t);           % intervals of the mesh, in terms of indexes
            
            

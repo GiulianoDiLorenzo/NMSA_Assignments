@@ -27,6 +27,6 @@ F = force(x);
 for s = 1:nln
     for k = 1:length(w_1D)
         Jdet = BJ;  % determinant 
-        f(s) = f(s) + w_1D(k)*Jdet*F(k)*dphiq(1,k,s);
+        f(s) = f(s) + Jdet*w_1D(k)*F(k)*dphiq(1,k,s);
     end    
 end

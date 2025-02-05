@@ -1,7 +1,7 @@
 function [A,b,u_g] = BoundaryConditions(A,b,femregion,Data)
 %% [A,b,u_g] = BoundaryConditions(A,b,femregion,Data)
 %==========================================================================
-% Assign Dirchlet boundary conditions
+% Assign Dirchlet boundary conditions, after assembling the matrices
 %==========================================================================
 %    called in Main.m
 %
@@ -30,6 +30,10 @@ elseif strcmp(Data.boundary,'DN')
     boundary_points = femregion.boundary_points(1);
 elseif strcmp(Data.boundary,'ND')
     boundary_points = femregion.boundary_points(end);  
+elseif strcmp(Data.boundary, 'DR')
+    boundary_points = femregion.boundary_points(1); 
+    D = zeros(ndof,1);
+    D(end) = Data.mu(femregion.coord(end))*Data.gR(femregion.coord(end))*Data.alpha(femregion.coord(end));
 end
 
 x = femregion.dof(boundary_points,1);
@@ -48,5 +52,6 @@ for k = 1:length(boundary_points)
     b_0(boundary_points(k)) = 0;
 end
 
-b = b_0;
+
+b = b_0 + D;
 A = A_0;

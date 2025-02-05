@@ -1,4 +1,4 @@
-function [A,f]=Matrix1D(Data,femregion)
+function [A, f]=Matrix1D(Data,femregion)
 %% [A,f] = Matrix1D(Data,Femregion)
 %==========================================================================
 % Assembly of the stiffness matrices A and rhs f
@@ -21,7 +21,7 @@ fprintf('Assembling matrices and right hand side ... \n');
 ndof         = femregion.ndof;         % degrees of freedom
 nln          = femregion.nln;          % local degrees of freedom
 ne           = femregion.ne;           % number of elements
-connectivity = femregion.connectivity; % connectivity matrix
+connectivity = femregion.connectivity; % connectivity matrix, list of intervals
 
 
 % shape functions
@@ -43,7 +43,7 @@ f = sparse(ndof,1);     % Global Load vector
 for ie = 1 : ne
      
     % Local to global map --> To be used in the assembly phase
-    iglo = connectivity(1:nln,ie);
+    iglo = connectivity(1:nln,ie); %current interval of interest, in terms of indexes
   
     [BJ, nodes_1D_phys] = GetJacobian(femregion.coord(iglo,:), nodes_1D);
     % BJ        = Jacobian of the elemental map 
@@ -54,7 +54,7 @@ for ie = 1 : ne
     %=============================================================%
     
     % Local stiffness matrix 
-    [A_loc] = Stiffness(GradPhi, w_1D, nln, BJ);
+    [A_loc] = Stiffness(GradPhi, w_1D, nln, Data.mu(ie)*BJ);
 
     % Assembly phase for stiffness matrix
     A(iglo,iglo) = A(iglo,iglo) + A_loc; 
@@ -64,7 +64,7 @@ for ie = 1 : ne
     %=============================================================%
     
     % Local mass matrix 
-    [M_loc] = Mass(Phi, w_1D, nln, BJ);
+    [M_loc] = Mass(Phi, w_1D, nln, Data.omega*Data.rho(ie)*BJ);
 
     % Assembly phase for mass matrix
     M(iglo,iglo) = M(iglo,iglo) + M_loc;   
@@ -82,4 +82,4 @@ for ie = 1 : ne
 end
 
 
-A = Data.mu*A + Data.sigma*M;
+A = M-A;
