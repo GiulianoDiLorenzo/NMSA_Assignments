@@ -47,27 +47,28 @@ for ie = 1 : ne
   
     [BJ, nodes_1D_phys] = GetJacobian(femregion.coord(iglo,:), nodes_1D);
     % BJ        = Jacobian of the elemental map 
-    % pphys_1D  = vertex coordinates in the physical domain 
+    % nodes_1D_phys  = vertex coordinates in the physical domain, i.e. in
+    % [0,L], x_ie, and x_{ie+1}
    
     %=============================================================%
     % STIFFNESS MATRIX
     %=============================================================%
     
     % Local stiffness matrix 
-    [A_loc] = Stiffness(GradPhi, w_1D, nln, Data.mu(ie)*BJ);
+    [A_loc] = Stiffness(GradPhi, w_1D, nln, BJ);
 
     % Assembly phase for stiffness matrix
-    A(iglo,iglo) = A(iglo,iglo) + A_loc; 
+    A(iglo,iglo) = A(iglo,iglo) + A_loc;    %[Data.mu(ie), Data.mu(ie+1); Data.mu(ie), Data.mu(ie+1)].*A_loc; 
     
     %=============================================================%
     % MASS MATRIX
     %=============================================================%
     
     % Local mass matrix 
-    [M_loc] = Mass(Phi, w_1D, nln, Data.omega*Data.rho(ie)*BJ);
+    [M_loc] = Mass(Phi, w_1D, nln, BJ);         %Data.omega*Data.rho(ie)*BJ);
 
     % Assembly phase for mass matrix
-    M(iglo,iglo) = M(iglo,iglo) + M_loc;   
+    M(iglo,iglo) = M(iglo,iglo) + Data.omega*Data.rho(ie)*M_loc;   
     
     %==============================================
     % FORCING TERM --RHS

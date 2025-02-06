@@ -11,7 +11,7 @@ addpath Postprocessing
 
 %% Data for Test
 
-TestName = 'TestHW1_3a';
+TestName = 'TestHW1_1';
 
 Data = DataTest(TestName);
 %Test2 solves the easy version of the problem with Dirichlet conditions put

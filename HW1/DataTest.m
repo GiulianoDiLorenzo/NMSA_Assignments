@@ -62,12 +62,12 @@ elseif strcmp(TestName,'TestHW1_1')
     Data.boundary = 'DR';
     
     % Parameters and external forces, simple case with constant terms rho,mu
-    Data.mu = @(x) ones(size(x));
-    Data.rho = @(x) ones(size(x));
+    Data.mu = @(x) 2.*ones(size(x));
+    Data.rho = @(x) 1.*ones(size(x));
     Data.omega = 1;
     Data.alpha = @(x) Data.mu(x) .* Data.rho(x) * Data.omega ./ 1i;
 
-    Data.force = @(x) (Data.rho(x) * Data.omega - Data.mu(x)*(2*pi)^2) .* sin(2*pi*x);
+    Data.force = @(x) (Data.rho(x)*Data.omega - Data.mu(x)*(2*pi)^2) .* sin(2*pi*x);
     Data.gD = @(x) 0.*x;                % Dirichlet condition on the left part of the domain
     Data.gR = @(x) [zeros(size(x)-1), sin(2*pi*Data.L) - 1i*2*pi/(Data.rho(L).*Data.omega)*cos(2*pi*L)]  % Dirichlet condition on the right part of the domain
     

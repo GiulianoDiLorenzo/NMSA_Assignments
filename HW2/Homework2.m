@@ -16,18 +16,118 @@
 
 clear; close all
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Parameters
 
-% exact solution for computing the error
-u  = @(x,t) ...;
-ut = @(x,t) ...;
-ux = @(x,t) ...;
+%Section definition
+S_const = @(x) ones(size(x));
+S_var = @(x)  (1+2*x).^2;
 
+% Space domain (0,1) and time domain (0,T)
+T = 5;
+I = [0 1];
+
+% Number of time steps
+NT = 8000;
+% Time step / temporal mesh size
+dt = T/ NT;
+
+% Number of space steps
+NX = 400;
+% Space step / spatial mesh size
+dx = ( I(2) - I(1) ) /NX;
 
 % velocity
 c = 1;
+
+%gamma 
+gamma = c/I(2);
+
+
+%lambda
+lambda = gamma*dt/dx;
+
+%Space domain definition: 0 to L in NX elements
+x = linspace(I(1), I(2), NX).';
+
+%Time domain definition: 0 to T in NT elements
+t = linspace(0, T, NT);
+
+
+
+%% Point 2, exact solution declaration
+
+% exact solution for computing the error
+uex   = @(x,t)  cos(pi*(x/2+1)) .* cos(3*pi*t);
+
+% 1st derivatives
+ut    = @(x,t)  -3*pi * cos(pi*(x/2+1)) .* sin(3*pi*t);
+ux    = @(x,t) -pi/2 * sin(pi*(x/2+1)) .* cos(3*pi*t);
+
+% 2nd derivatives
+utt = @(x,t) -(3*pi)^2*uex(x,t);
+uxx = @(x,t) -(pi/2)^2*uex(x,t);
+
+%Excitation force
+f  = @(x,t)  S_const(x).*utt(x,t) - gamma^2.*S_const(x).*uxx(x,t);
+F = f(x,t);
+
+%% Point 2, constant cross-section, leap-frog scheme
+
+%Initial conditions
+u_0 = uex(x,0);             %u_0 = u(x,0)
+u_1 = ut(x,0);              %u1 = du/dt(x,0)
+u_t_1 = zeros(size(t));     %u_t_1 = du/dt(1,t) 
+u_x_0 = zeros(size(t));     %u_x_0 = du/dx(0,t) 
+
+%%
+% Initializing the solution;
+sol = zeros(NX,NT);
+
+%Applying th boundary conditions
+                
+sol(:,1) = u_0;                 % 3rd BC
+sol(end,:) = u_0(end);          % 2nd BC
+%sol(2,:) = sol(1,:);            % 1st BC, to include in the loop
+sol(:,2) = u_1 * dt + sol(:,1); % 4th BC
+
+
+%Iteration through time and space
+for n = 3:NT
+    sol(1,n) = 2*sol(1,n-1) - sol(1,n-2) + lambda^2 * (sol(2,n-1)-2*sol(1,n-1)+sol(1,n-1)) + F(1,n-1);
+    %sol(2,n) = sol(1,n);        % 1st BC, in the loop
+    for k = 2:NX-1
+        sol(k,n) = 2*sol(k,n-1) - sol(k,n-2) + lambda^2 * (sol(k+1,n-1)-2*sol(k,n-1)+sol(k-1,n-1)) + F(k,n-1);
+    end
+    
+end
+
+%% Plotting results with constant cross-section
+figure()
+for n = 1:NT
+    num_sol = sol(:,n);
+    ex_sol = uex(x,t);
+    
+    % plot(x, sol(:,1));
+    % hold on;
+
+    plot(x,num_sol);
+    hold on;
+    
+    %plot(x,ex_sol(:,n));
+    
+    %legend('sol', 'u_e_x');
+    grid on;
+    title(['Solution comparison, t = ', num2str((n-1)*dt) ' s']);
+    xlabel('x-axis [m]');
+    ylabel('amplitude');
+    %ylim([-1,1]);
+    pause(0.01);
+    hold off;
+end
+
+
+
+%%
 a1 =  c;
 a2 = -c;
 
@@ -49,14 +149,7 @@ ut0 = @(x) ...;     % u_t(x,0)
 gp1 = @(t) 0.*t;
 gp2 = @(t) 0.*t;
 
-% Space domain (0,1) and time domain (0,T)
-T = 5;
-I = [0 1];
 
-% Number of time steps
-NT = 8000;
-% Number of space steps
-NX = 400;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,9 +167,7 @@ NX = 400;
 flag = 3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dt = T/NT;              % time step (Delta t)
-dx = (I(2)-I(1))/NX;    % mesh size (h)
-lambda = dt/dx;
+
 
 % Initial conditions
 % w = [w_1, w_2]'; 
