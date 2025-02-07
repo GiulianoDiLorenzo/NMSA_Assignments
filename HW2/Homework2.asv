@@ -87,30 +87,19 @@ sol = zeros(NX,NT);
                 
 sol(:,1) = u_0;                 % 3rd BC
 sol(end,:) = u_0(end);          % 2nd BC
-% sol(2,:) = sol(1,:);            % 1st BC, to include in the loop
+%sol(2,:) = sol(1,:);            % 1st BC, to include in the loop
 sol(:,2) = u_1 * dt + sol(:,1); % 4th BC
 
-% 
-% %Iteration through time and space, virtual extension of the domain (Ernest)
-% for n = 2:NT-1
-%     sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-sol(1,n)) + F(1,n);
-%     %sol(2,n) = sol(1,n);        % 1st BC, in the loop
-%     for k = 2:NX-1
-%         sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n)-2*sol(k,n)+sol(k-1,n))+ F(k,n);
-%     end
-% 
-% end
 
-
-% %Iteration through time and space, no virtual extension of the domain (GIU)
-% for n = 2:NT-1
-%     %%sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-sol(1,n)) + F(1,n);
-%     sol(2,n+1) = sol(1,n);        % 1st BC, in the loop
-%     for k = 3:NX-1
-%         sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n)-2*sol(k,n)+sol(k-1,n))+ F(k,n);
-%     end
-% 
-% end
+%Iteration through time and space
+for n = 2:NT-1
+    sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-sol(1,n)) + F(1,n);
+    %sol(2,n) = sol(1,n);        % 1st BC, in the loop
+    for k = 2:NX-1
+        sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n)-2*sol(k,n)+sol(k-1,n))+ F(k,n);
+    end
+    
+end
 
 %% Plotting results with constant cross-section
 figure()
