@@ -14,17 +14,17 @@
 %     u(k,n+1) - 2*u(k,n) + u(k,n-1) = 
 %     = lambda^2 *(u(k+1,n) - 2*u(x,n) + u(k-1,n)) + f(k,n)
 
-clear; close all
+clear; close all; clc;
 
 %% Parameters
-
-%Section definition
-S_const = @(x) ones(size(x));
-S_var = @(x)  (1+2*x).^2;
+% velocity, length and gamma
+c = 1;
+L = 1;
+gamma = c/L;
 
 % Space domain (0,1) and time domain (0,T)
 T = 5;
-I = [0 1];
+I = [0 L];
 
 % Number of time steps
 NT = 8000;
@@ -36,13 +36,6 @@ NX = 400;
 % Space step / spatial mesh size
 dx = ( I(2) - I(1) ) /NX;
 
-% velocity
-c = 1;
-
-%gamma 
-gamma = c/I(2);
-
-
 %lambda
 lambda = gamma*dt/dx;
 
@@ -52,30 +45,31 @@ x = linspace(I(1), I(2), NX).';
 %Time domain definition: 0 to T in NT elements
 t = linspace(0, T, NT);
 
-
+%Section definition
+S_const = 1;
+S_var = (1+2*x).^2;
 
 %% Point 2, exact solution declaration
-
 % exact solution for computing the error
-uex   = @(x,t)  cos(pi*(x/2+1)) .* cos(3*pi*t);
+uex   = cos(pi*(x/2+1)) * cos(3*pi*t);
 
 % 1st derivatives
-ut    = @(x,t)  -3*pi * cos(pi*(x/2+1)) .* sin(3*pi*t);
-ux    = @(x,t) -pi/2 * sin(pi*(x/2+1)) .* cos(3*pi*t);
+ut    = -3*pi * cos(pi*(x/2+1)) * sin(3*pi*t);
+ux    = -pi/2 * sin(pi*(x/2+1)) * cos(3*pi*t);
 
 % 2nd derivatives
-utt = @(x,t) -(3*pi)^2*uex(x,t);
-uxx = @(x,t) -(pi/2)^2*uex(x,t);
+utt = -(3*pi)^2 * cos(pi*(x/2+1)) * cos(3*pi*t);
+uxx = -(pi/2)^2 * cos(pi*(x/2+1)) * cos(3*pi*t);
 
 %Excitation force
-f  = @(x,t)  S_const(x).*utt(x,t) - gamma^2.*S_const(x).*uxx(x,t);
-F = f(x,t);
+f  = S_const .* utt - gamma^2 * S_const .* uxx;
+% f = (9*pi^2 - pi^2/4)*cos(pi*(x/2+1))*cos(3*pi*t)
 
 %% Point 2, constant cross-section, leap-frog scheme
 
 %Initial conditions
-u_0 = uex(x,0);             %u_0 = u(x,0)
-u_1 = ut(x,0);              %u1 = du/dt(x,0)
+u_0 = uex(:,1);             %u_0 = u(x,0)
+u_1 = ut(:,1);              %u1 = du/dt(x,0)
 u_t_1 = zeros(size(t));     %u_t_1 = du/dt(1,t) 
 u_x_0 = zeros(size(t));     %u_x_0 = du/dx(0,t) 
 
@@ -86,9 +80,10 @@ sol = zeros(NX,NT);
 %Applying th boundary conditions
                 
 sol(:,1) = u_0;                 % 3rd BC
-sol(end,:) = u_0(end);          % 2nd BC
-% sol(2,:) = sol(1,:);            % 1st BC, to include in the loop
 sol(:,2) = u_1 * dt + sol(:,1); % 4th BC
+for n = 1:NT
+    sol(end,n) = u_0(end);          % 2nd BC
+end
 
 % 
 % %Iteration through time and space, virtual extension of the domain (Ernest)
@@ -103,31 +98,26 @@ sol(:,2) = u_1 * dt + sol(:,1); % 4th BC
 
 
 % %Iteration through time and space, no virtual extension of the domain (GIU)
-% for n = 2:NT-1
-%     %%sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-sol(1,n)) + F(1,n);
-%     sol(2,n+1) = sol(1,n);        % 1st BC, in the loop
-%     for k = 3:NX-1
-%         sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n)-2*sol(k,n)+sol(k-1,n))+ F(k,n);
-%     end
-% 
-% end
+for n = 2:NT-1 % (in n+1)
+    % case k = 1
+    sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-2*sol(1,n)+sol(1,n))+ f(1,n);
+
+    sol(2,n+1) = sol(1,n+1);        % 1st BC, in the loop
+    
+    for k = 2:NX-1
+        sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n)) + f(k,n);
+    end
+
+end
 
 %% Plotting results with constant cross-section
 figure()
+grid on;
 for n = 1:NT
-    num_sol = sol(:,n);
-    ex_sol = uex(x,t);
-    
-    % plot(x, sol(:,1));
-    % hold on;
-
-    plot(x,num_sol);
+    plot(x, uex(:,n));
     hold on;
-    
-    %plot(x,ex_sol(:,n));
-    
-    %legend('sol', 'u_e_x');
-    grid on;
+    plot(x, sol(:,n));
+    legend('u_e_x', 'sol');
     title(['Solution comparison, t = ', num2str((n-1)*dt) ' s']);
     xlabel('x-axis [m]');
     ylabel('amplitude');
@@ -143,8 +133,8 @@ a1 =  c;
 a2 = -c;
 
 % Initial data
-u0  = @(x) ...;     % u(x,0)
-ut0 = @(x) ...;     % u_t(x,0)
+% u0  = @(x) ...;     % u(x,0)
+% ut0 = @(x) ...;     % u_t(x,0)
 
 % % Initial conditions for system u_t = A u_x  (u_t + A u_x = 0)
 % v0  = @(x) 2*pi*sin(2*pi*x); % u_t(t=0)
