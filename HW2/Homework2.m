@@ -14,7 +14,28 @@
 %     u(k,n+1) - 2*u(k,n) + u(k,n-1) = 
 %     = lambda^2 *(u(k+1,n) - 2*u(x,n) + u(k-1,n)) + f(k,n)
 
-clear; close all; clc;
+clc
+clear 
+close all
+reset(groot)
+
+set(0,'DefaultFigureWindowStyle','docked');             % all figures as tabs in single window
+
+set(groot, 'DefaultTextInterpreter', 'latex', ...           % interpreter Latex - text and annotations
+           'DefaultAxesTickLabelInterpreter', 'latex', ...  % interpreter Latex - tick labels
+           'DefaultLegendInterpreter', 'latex', ...         % interpreter Latex - legends
+           'DefaultLineLineWidth', 1.5, ...                 % functions
+           'DefaultAxesFontSize', 12, ...                   % axis and title
+           'DefaultTextFontSize', 14, ...                   % sgtitle
+           'DefaultAxesFontName', 'Times New Roman', ...    % axis and title
+           'DefaultTextFontName', 'Times New Roman', ...    % sgtitle
+           'DefaultAxesLineWidth', 1, ...                   % axis
+           'DefaultConstantLineLineWidth', 1.2, ...         % xline and yline
+           'DefaultAxesTitleFontSizeMultiplier', 1.2, ...   % title
+           'DefaultFigureColor', 'w', ...                   % background color
+           'DefaultAxesBox', 'on', ...                      % plot box
+           'DefaultLegendLocation', 'best' ...              % legend position
+           );
 
 %% Parameters
 % velocity, length and gamma
@@ -22,111 +43,124 @@ c = 1;
 L = 1;
 gamma = c/L;
 
-% Space domain (0,1) and time domain (0,T)
+% space domain (0,1) and time domain (0,T)
 T = 5;
 I = [0 L];
 
-% Number of time steps
+% number of time steps
 NT = 8000;
-% Time step / temporal mesh size
+% time step / temporal mesh size
 dt = T/ NT;
 
-% Number of space steps
+% number of space steps
 NX = 400;
-% Space step / spatial mesh size
+% space step / spatial mesh size
 dx = ( I(2) - I(1) ) /NX;
 
-%lambda
+% lambda
 lambda = gamma*dt/dx;
 
-%Space domain definition: 0 to L in NX elements
+% space domain definition: 0 to L in NX elements
 x = linspace(I(1), I(2), NX).';
 
-%Time domain definition: 0 to T in NT elements
+% time domain definition: 0 to T in NT elements
 t = linspace(0, T, NT);
 
-%Section definition
+% section definition
 S_const = 1;
 S_var = (1+2*x).^2;
+Sx = 4 + 8*x;   % derivative in x of S_var
 
-%% Point 2, exact solution declaration
+%% Point 2, exact solution
 % exact solution for computing the error
-uex   = cos(pi*(x/2+1)) * cos(3*pi*t);
+% uex   = cos(pi*(x/2+1)) * cos(3*pi*t);
+uex     = - cos(pi/2*x) * cos(3*pi*t);
 
 % 1st derivatives
-ut    = -3*pi * cos(pi*(x/2+1)) * sin(3*pi*t);
-ux    = -pi/2 * sin(pi*(x/2+1)) * cos(3*pi*t);
+ux      = pi/2 * sin(pi/2*x) * cos(3*pi*t);
+ut      = 3*pi * cos(pi/2*x) * sin(3*pi*t);
 
 % 2nd derivatives
-utt = -(3*pi)^2 * cos(pi*(x/2+1)) * cos(3*pi*t);
-uxx = -(pi/2)^2 * cos(pi*(x/2+1)) * cos(3*pi*t);
+% utt = -(3*pi)^2 * cos(pi*(x/2+1)) * cos(3*pi*t);
+% uxx = -(pi/2)^2 * cos(pi*(x/2+1)) * cos(3*pi*t);
+uxx     = (pi/2)^2 * cos(pi/2*x) * cos(3*pi*t);
+utt     = (3*pi)^2 * cos(pi/2*x) * cos(3*pi*t);
 
-%Excitation force
-f  = S_const .* utt - gamma^2 * S_const .* uxx;
-% f = (9*pi^2 - pi^2/4)*cos(pi*(x/2+1))*cos(3*pi*t)
+% excitation force
+f  = S_const * (utt - gamma^2 * uxx);
+% f = S_var .* utt - gamma^2 * (Sx .* ux + s_var .* uxx);
 
-%% Point 2, constant cross-section, leap-frog scheme
+% initial conditions
+u_0 = uex(:,1);             % u_0 = u(x,0)
+u_1 = ut(:,1);              % u_1 = du/dt(x,0)
+u_t_1 = zeros(size(t));     % u_t_1 = du/dt(1,t) 
+u_x_0 = zeros(size(t));     % u_x_0 = du/dx(0,t) 
 
-%Initial conditions
-u_0 = uex(:,1);             %u_0 = u(x,0)
-u_1 = ut(:,1);              %u1 = du/dt(x,0)
-u_t_1 = zeros(size(t));     %u_t_1 = du/dt(1,t) 
-u_x_0 = zeros(size(t));     %u_x_0 = du/dx(0,t) 
-
-%%
-% Initializing the solution;
-sol = zeros(NX,NT);
-
-%Applying th boundary conditions
-                
-sol(:,1) = u_0;                 % 3rd BC
-sol(:,2) = u_1 * dt + sol(:,1); % 4th BC
-for n = 1:NT
-    sol(end,n) = u_0(end);          % 2nd BC
-end
-
-% 
-% %Iteration through time and space, virtual extension of the domain (Ernest)
-% for n = 2:NT-1
-%     sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-sol(1,n)) + F(1,n);
-%     %sol(2,n) = sol(1,n);        % 1st BC, in the loop
-%     for k = 2:NX-1
-%         sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n)-2*sol(k,n)+sol(k-1,n))+ F(k,n);
-%     end
-% 
+%% Plotting exact solution only
+% figure()
+% for n = 1:NT
+%     plot(x, uex(:,n));
+%     title("Exact solution $u_{ex}$ at t = "+ (n-1)*dt + " s");
+%     xlabel('x [m]');
+%     ylabel('Amplitude [-]');
+%     %ylim([-1,1]);
+%     grid on;
+%     pause(1e-4);
+%     hold off;
 % end
 
+%% Point 2, constant cross-section, leap-frog scheme
+% initializing the solution;
+sol = zeros(NX+1, NT+1);
 
-% %Iteration through time and space, no virtual extension of the domain (GIU)
-for n = 2:NT-1 % (in n+1)
-    % case k = 1
-    sol(1,n+1) = 2*sol(1,n) - sol(1,n-1) + lambda^2 * (sol(2,n)-2*sol(1,n)+sol(1,n))+ f(1,n);
+% applying the boundary conditions
+sol(2:end, 2) = u_0;                        % 3rd condition
+sol(2:end, 1) = sol(2:end, 2) - dt * u_1;   % 4th condition
+sol(end,:) = u_0(end);                      % 2nd condition
+sol(1,:) = sol(2,:);                        % 1st condition
 
-    sol(2,n+1) = sol(1,n+1);        % 1st BC, in the loop
-    
+for n = 2:NT-1      % evaluating n+1
+
     for k = 2:NX-1
-        sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n)) + f(k,n);
+        sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n)) + dt^2 * f(k-1,n);
     end
 
+    sol(1,n+1) = sol(2,n+1);                % 1st condition
 end
+
+% discarding virtual lines
+sol = sol(2:end, 2:end);
 
 %% Plotting results with constant cross-section
 figure()
-grid on;
 for n = 1:NT
     plot(x, uex(:,n));
     hold on;
     plot(x, sol(:,n));
-    legend('u_e_x', 'sol');
-    title(['Solution comparison, t = ', num2str((n-1)*dt) ' s']);
-    xlabel('x-axis [m]');
-    ylabel('amplitude');
+    legend('$u_{ex}$', 'sol');
+    title("Constant cross-section S(x) = " + S_const + "m, solution comparison at t = "+ (n-1)*dt+ " s");
+    xlabel('x [m]');
+    ylabel('Amplitude [-]');
     %ylim([-1,1]);
-    pause(0.01);
+    grid on;
+    pause(dt);
     hold off;
 end
 
+%% Error evaluation
+err = sol - uex;
 
+figure()
+for n = 1:NT
+    plot(x, err(:,n));
+    title("Error evaluation ($\Delta$t = " + dt + ", $\Delta$x = " + dx + ") at t = "+ (n-1)*dt+ " s");
+    xlabel('x [m]');
+    ylabel('Amplitude [-]');
+    %ylim([-1,1]);
+    grid on;
+    pause(1e-4);
+    hold off;
+end
 
 %%
 a1 =  c;
