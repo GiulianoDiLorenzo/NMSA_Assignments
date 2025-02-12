@@ -47,15 +47,15 @@ gamma = c/L;
 T = 5;
 I = [0 L];
 
-% number of time steps
-NT = 8000;
+% number of time steps (minimum 5*NX for stability)
+NT = 4000;
 % time step / temporal mesh size
-dt = T/ NT;
+dt = T/NT;
 
 % number of space steps
-NX = 400;
+NX = 800;
 % space step / spatial mesh size
-dx = ( I(2) - I(1) ) /NX;
+dx = (I(2) - I(1))/NX;
 
 % lambda
 lambda = gamma*dt/dx;
@@ -68,7 +68,7 @@ t = linspace(0, T, NT);
 
 % section definition
 S_const = 1;
-S_var = (1+2*x).^2;
+S = (1+2*x).^2;
 Sx = 4 + 8*x;   % derivative in x of S_var
 
 %% Point 2, exact solution
@@ -86,30 +86,19 @@ ut      = 3*pi * cos(pi/2*x) * sin(3*pi*t);
 uxx     = (pi/2)^2 * cos(pi/2*x) * cos(3*pi*t);
 utt     = (3*pi)^2 * cos(pi/2*x) * cos(3*pi*t);
 
-% excitation force
-f  = S_const * (utt - gamma^2 * uxx);
-% f = S_var .* utt - gamma^2 * (Sx .* ux + s_var .* uxx);
-
 % initial conditions
 u_0 = uex(:,1);             % u_0 = u(x,0)
 u_1 = ut(:,1);              % u_1 = du/dt(x,0)
 u_t_1 = zeros(size(t));     % u_t_1 = du/dt(1,t) 
-u_x_0 = zeros(size(t));     % u_x_0 = du/dx(0,t) 
+u_x_0 = zeros(size(t));     % u_x_0 = du/dx(0,t)
 
-%% Plotting exact solution only
-% figure()
-% for n = 1:NT
-%     plot(x, uex(:,n));
-%     title("Exact solution $u_{ex}$ at t = "+ (n-1)*dt + " s");
-%     xlabel('x [m]');
-%     ylabel('Amplitude [-]');
-%     %ylim([-1,1]);
-%     grid on;
-%     pause(1e-4);
-%     hold off;
-% end
+% excitation forces
+f  = S_const * (utt - gamma^2 * uxx);
+f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
 
 %% Point 2, constant cross-section, leap-frog scheme
+tic
+
 % initializing the solution;
 sol = zeros(NX+1, NT+1);
 
@@ -119,7 +108,7 @@ sol(2:end, 1) = sol(2:end, 2) - dt * u_1;   % 4th condition
 sol(end,:) = u_0(end);                      % 2nd condition
 sol(1,:) = sol(2,:);                        % 1st condition
 
-for n = 2:NT-1      % evaluating n+1
+for n = 2:NT      % evaluating n+1, up to NT to consider virtual line
 
     for k = 2:NX-1
         sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n)) + dt^2 * f(k-1,n);
@@ -128,41 +117,161 @@ for n = 2:NT-1      % evaluating n+1
     sol(1,n+1) = sol(2,n+1);                % 1st condition
 end
 
-% discarding virtual lines
+% discarding virtual lines (1,:) and (:,1)
 sol = sol(2:end, 2:end);
 
-%% Plotting results with constant cross-section
+toc
+
+% error evaluation
+err = sol - uex;    % distance between numerical and exact solution
+[max_err, ~] = max(abs(err(:)));        % maximum error (in abs) for numerical scheme
+
+%% Plotting solution comparison with constant cross-section
 figure()
 for n = 1:NT
-    plot(x, uex(:,n));
+    plot(x, uex(:,n), "LineStyle", ":");
     hold on;
     plot(x, sol(:,n));
-    legend('$u_{ex}$', 'sol');
-    title("Constant cross-section S(x) = " + S_const + "m, solution comparison at t = "+ (n-1)*dt+ " s");
-    xlabel('x [m]');
-    ylabel('Amplitude [-]');
+    legend('$u_{ex}$', '$u$');
+    title("Solution comparison with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+    xlabel('$x$ [m]');
+    ylabel('$u(x,t), \quad u_{ex}(x,t)$');
     %ylim([-1,1]);
     grid on;
-    pause(dt);
+    pause(1e-5);
     hold off;
 end
 
-%% Error evaluation
-err = sol - uex;
+%% Plotting solution as surface
+figure()
+[X, T] = ndgrid(x, t);
+surf(X, T, sol);
+shading interp
+title("Numerical solution with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
+xlabel('$x$ [m]');
+ylabel('$t$ [s]');
+zlabel('$u(x,t)$');
+colorbar
 
+%% Plotting error with constant cross-section
 figure()
 for n = 1:NT
     plot(x, err(:,n));
-    title("Error evaluation ($\Delta$t = " + dt + ", $\Delta$x = " + dx + ") at t = "+ (n-1)*dt+ " s");
-    xlabel('x [m]');
-    ylabel('Amplitude [-]');
+    title("Error evaluation with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+    xlabel('$x$ [m]');
+    ylabel('$u(x,t) - u_{ex}(x,t)$');
     %ylim([-1,1]);
     grid on;
-    pause(1e-4);
+    pause(1e-5);
     hold off;
 end
 
+%% Plotting error (in abs) as surface
+figure()
+[X, T] = ndgrid(x, t);
+surf(X, T, abs(err));
+shading interp
+title("Numerical error (in abs) with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
+xlabel('$x$ [m]');
+ylabel('$t$ [s]');
+zlabel('$|u(x,t) - u_{ex}(x,t)|$');
+colorbar
+
+%% Point 2, variable cross-section, leap-frog scheme
+tic
+
+% initializing the solution;
+sol_var = zeros(NX+1, NT+1);
+
+% applying the boundary conditions
+sol_var(2:end, 2) = u_0;                        % 3rd condition
+sol_var(2:end, 1) = sol_var(2:end, 2) - dt * u_1;   % 4th condition
+sol_var(end,:) = u_0(end);                      % 2nd condition
+sol_var(1,:) = sol_var(2,:);                        % 1st condition
+
+% extending S(x) to be coherent with the virtual lines
+S = [(1-2*dx)^2; S];
+
+for n = 2:NT      % evaluating n+1, up to NT to consider virtual line
+
+    for k = 2:NX-1
+        sol_var(k,n+1) = 2*sol_var(k,n) - sol_var(k,n-1) + lambda^2/S(k) * (((S(k+1)-S(k-1))/4 + S(k)) * sol_var(k+1,n) - 2*S(k) * sol_var(k,n) + ((S(k-1)-S(k+1))/4 + S(k)) * sol_var(k-1,n)) + dt^2/S(k) * f_var(k-1,n);
+    end
+
+    sol_var(1,n+1) = sol_var(2,n+1);                % 1st condition
+end
+
+% discarding virtual lines
+sol_var = sol_var(2:end, 2:end);
+S = S(2:end);
+
+toc
+
+% error evaluation
+err_var = sol_var - uex;    % distance between numerical and exact solution
+[max_err, ~] = max(abs(err_var(:)));        % maximum error (in abs) for numerical scheme
+
+%% Plotting solution comparison with variable cross-section
+figure()
+for n = 1:NT
+    plot(x, uex(:,n), "LineStyle", ":");
+    hold on;
+    plot(x, sol_var(:,n));
+    legend('$u_{ex}$', '$u$');
+    title("Solution comparison with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+    xlabel('$x$ [m]');
+    ylabel('$u(x,t), \quad u_{ex}(x,t)$');
+    %ylim([-1,1]);
+    grid on;
+    pause(1e-5);
+    hold off;
+end
+
+%% Plotting solution as surface
+figure()
+[X, T] = ndgrid(x, t);
+surf(X, T, sol_var);
+shading interp
+title("Numerical solution with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
+xlabel('$x$ [m]');
+ylabel('$t$ [s]');
+zlabel('$u(x,t)$');
+colorbar
+
+%% Plotting error with variable cross-section
+figure()
+for n = 1:NT
+    plot(x, err_var(:,n));
+    title("Error evaluation with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+    xlabel('$x$ [m]');
+    ylabel('$u(x,t) - u_{ex}(x,t)$');
+    %ylim([-1,1]);
+    grid on;
+    pause(1e-5);
+    hold off;
+end
+
+%% Plotting error (in abs) as surface
+figure()
+[X, T] = ndgrid(x, t);
+surf(X, T, abs(err_var));
+shading interp
+title("Numerical error (in abs) with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
+xlabel('$x$ [m]');
+ylabel('$t$ [s]');
+zlabel('$|u(x,t) - u_{ex}(x,t)|$');
+colorbar
+
+
+
+
 %%
+
+
+
+
+
+
 a1 =  c;
 a2 = -c;
 
@@ -227,26 +336,24 @@ end
 for n = 1:NT
     for k = 2:NX
         
-        % if flag == 1 % FCE scheme
-        %     SOL_w(j,n+1)      = SOL_w(j,n)      - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
-        %     SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); % w_2
-        % elseif flag == 2 % LF scheme
-        %     SOL_w(j,n+1)      = 0.5*(SOL_w(j+1,n)+SOL_w(j-1,n))           - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
-        %     SOL_w(NX+1+j,n+1) = 0.5*(SOL_w(NX+1+j+1,n)+SOL_w(NX+1+j-1,n)) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); %w_2
-        % elseif flag == 3 % LW scheme
-        %     SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
-        %                       + 0.5*lambda^2*a1^2*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
-        %     SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
-        %                       + 0.5*lambda^2*a2^2*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
-        % elseif flag == 4 % UPWIND
-        %     SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
-        %                       + 0.5*lambda*abs(a1)*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
-        %     SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
-        %                       + 0.5*lambda*abs(a2)*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
-        % 
-        % end
+        if flag == 1 % FCE scheme
+            SOL_w(j,n+1)      = SOL_w(j,n)      - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
+            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); % w_2
+        elseif flag == 2 % LF scheme
+            SOL_w(j,n+1)      = 0.5*(SOL_w(j+1,n)+SOL_w(j-1,n))           - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
+            SOL_w(NX+1+j,n+1) = 0.5*(SOL_w(NX+1+j+1,n)+SOL_w(NX+1+j-1,n)) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); %w_2
+        elseif flag == 3 % LW scheme
+            SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
+                              + 0.5*lambda^2*a1^2*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
+            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
+                              + 0.5*lambda^2*a2^2*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
+        elseif flag == 4 % UPWIND
+            SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
+                              + 0.5*lambda*abs(a1)*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
+            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
+                              + 0.5*lambda*abs(a2)*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
 
-        SOL_u(k,n+1) = lambda^2 *(SOL_u(k+1,n) - 2*SOL_u(k,n) + SOL_u(k-1,n)) + F(k,n) + 2*SOL_u(k,n) - SOL_u(k,n-1);
+        end
     end
     
     % Boundary conditions
