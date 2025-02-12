@@ -4,6 +4,16 @@
 %     f(x) force
 %     u(x,t) solution
 
+% Neumann conditions
+%     ux(0) = ux(1) = 0
+% 
+% Initial profile and derivative
+%     u(x,0), u_t(x,0)
+
+% Finite difference method (SIMPLIFIED VERSION)
+%     u(k,n+1) - 2*u(k,n) + u(k,n-1) = 
+%     = lambda^2 *(u(k+1,n) - 2*u(x,n) + u(k-1,n)) + f(k,n)
+
 clc
 clear 
 close all
@@ -200,7 +210,8 @@ colorbar
 % end
 
 %% Looping with different NX and NT
-NX = 100*linspace(1,20,20);
+
+NX = 100*[800, 1000, 1200, 1400, 1600, 1800, 2000];
 NT = 5*NX;
 
 e_L2 = zeros(1, length(NX));
@@ -238,17 +249,6 @@ for i = 1:length(NX)
     e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (1 * 5));
 
 end
-
-% printing norm errors in function of dx
-figure()
-plot(flip(1./NX), flip(e_L2), '-o');
-title("Norm error as function of space step, $N_T = 5 N_X$");
-xlabel("$\Delta x$ [m]")
-ylabel("$||u-u_{ex}||_{L^2}$");
-grid on
-hold on
-plot(flip(1./NX), flip(e_L2_var), '-o');
-legend("Constant profile", "Variable profile");
 
 %%
 
