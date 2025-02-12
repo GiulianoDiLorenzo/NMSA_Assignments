@@ -94,7 +94,7 @@ shading interp
 title("Numerical solution with constant cross-section S(x) = 1 m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
 xlabel('$x$ [m]');
 ylabel('$t$ [s]');
-zlabel('$u(x,t)$');
+zlabel('$u_h(x,t)$');
 colorbar
 
 % approximation difference (in space and time)
@@ -109,7 +109,7 @@ shading interp
 title("Numerical error (in abs) with constant cross-section S(x) = 1 m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
 xlabel('$x$ [m]');
 ylabel('$t$ [s]');
-zlabel('$|u(x,t) - u_{ex}(x,t)|$');
+zlabel('$|u_h(x,t) - u_{ex}(x,t)|$');
 colorbar
 
 % %% EXTRA - Plotting solution comparison with constant cross-section
@@ -141,6 +141,38 @@ colorbar
 %     hold off;
 % end
 
+%% Point 2, instability example (if you run this, take care of running the previous blocks again)
+NX = 800;
+NT = 2000;
+
+dx = (I(2) - I(1))/NX;
+dt = T/NT;
+lambda = gamma*dt/dx;
+
+x = linspace(I(1), I(2), NX).';
+t = linspace(0, T, NT);
+
+uex     = - cos(pi/2*x) * cos(3*pi*t);
+ux      = pi/2 * sin(pi/2*x) * cos(3*pi*t);
+ut      = 3*pi * cos(pi/2*x) * sin(3*pi*t);
+uxx     = (pi/2)^2 * cos(pi/2*x) * cos(3*pi*t);
+utt     = (3*pi)^2 * cos(pi/2*x) * cos(3*pi*t);
+
+u_0 = uex(:,1);             % u_0 = u(x,0)
+u_1 = ut(:,1);              % u_1 = du/dt(x,0)
+f  = S_const * (utt - gamma^2 * uxx);
+
+sol = computeSolutionConstant(NX, NT, dt, u_0, u_1, lambda, f);
+
+% printing instable solution
+figure()
+m = 6;
+plot(x, sol(:, m));
+grid on
+title("Numerical solution with constant cross-section S(x) = 1 m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at time t = " + m*dt + " s");
+xlabel("$x$ [m]");
+ylabel("$u_h(x,t)$");
+
 %% Point 3, variable cross-section, leap-frog scheme
 sol_var = computeSolutionVariable(NX, NT, dx, dt, S, u_0, u_1, lambda, f_var);
 
@@ -152,7 +184,7 @@ shading interp
 title("Numerical solution with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
 xlabel('$x$ [m]');
 ylabel('$t$ [s]');
-zlabel('$u(x,t)$');
+zlabel('$u_h(x,t)$');
 colorbar
 
 % approximation difference (in space and time)
@@ -167,7 +199,7 @@ shading interp
 title("Numerical error (in abs) with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
 xlabel('$x$ [m]');
 ylabel('$t$ [s]');
-zlabel('$|u(x,t) - u_{ex}(x,t)|$');
+zlabel('$|u_h(x,t) - u_{ex}(x,t)|$');
 colorbar
 
 % %% EXTRA - Plotting solution comparison with variable cross-section
@@ -244,7 +276,7 @@ figure()
 plot(flip(1./NX), flip(e_L2), '-o');
 title("Norm error as function of space step, $N_T = 5 N_X$");
 xlabel("$\Delta x$ [m]")
-ylabel("$||u-u_{ex}||_{L^2}$");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
 plot(flip(1./NX), flip(e_L2_var), '-o');
