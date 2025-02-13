@@ -178,8 +178,8 @@ sol_var = computeSolutionVariable(NX, NT, dx, dt, S, u_0, u_1, lambda, f_var);
 
 % printing solution as surface
 figure()
-[X, T] = ndgrid(x, t);
-surf(X, T, sol);
+[X_axis, T_axis] = ndgrid(x, t);
+surf(X_axis, T_axis, sol);
 shading interp
 title("Numerical solution with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
 xlabel('$x$ [m]');
@@ -193,8 +193,8 @@ e_L2_var = sqrt(sum(sum(err.^2)) * dx * dt / (1 * 5));
 
 % plotting error (in abs) as surface
 figure()
-[X, T] = ndgrid(x, t);
-surf(X, T, abs(err_var));
+[X_axis, T_axis] = ndgrid(x, t);
+surf(X_axis, T_axis, abs(err_var));
 shading interp
 title("Numerical error (in abs) with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
 xlabel('$x$ [m]');
@@ -232,8 +232,9 @@ colorbar
 % end
 
 %% Looping with different NX and NT
+mesh_const = 10;     % refinement factor (tried 5, 10 and 15)
 NX = 100*linspace(1,20,20);
-NT = 5*NX;
+NT = mesh_const*NX;
 
 e_L2 = zeros(1, length(NX));
 e_L2_var = zeros(1, length(NX));
@@ -241,11 +242,11 @@ e_L2_var = zeros(1, length(NX));
 for i = 1:length(NX)
 
     dx = 1/NX(i);
-    dt = 5/NT(i);
+    dt = T/NT(i);
     lambda = gamma*dt/dx;
     
     x = linspace(0, 1, NX(i)).';
-    t = linspace(0, 5, NT(i));
+    t = linspace(0, T, NT(i));
     
     S = (1+2*x).^2;
     Sx = 4 + 8*x;
@@ -264,22 +265,39 @@ for i = 1:length(NX)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
-    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (1 * 5));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (1 * T));
     
     sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (1 * 5));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (1 * T));
 
 end
 
 % printing norm errors in function of dx
 figure()
-plot(flip(1./NX), flip(e_L2), '-o');
-title("Norm error as function of space step, $N_T = 5 N_X$");
-xlabel("$\Delta x$ [m]")
+% plot(flip(1./NX), flip(e_L2), '-o');
+plot(flip(1./NX)*100, flip(e_L2), '-o');
+title("Norm error as function of relative space step, $N_T$ = " + mesh_const + " $N_X$");
+% xlabel("$\Delta x$ [m]");
+xlabel("$\Delta x/L$ [\%]");
 ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
-plot(flip(1./NX), flip(e_L2_var), '-o');
+% plot(flip(1./NX), flip(e_L2_var), '-o');
+plot(flip(1./NX)*100, flip(e_L2_var), '-o');
+legend("Constant profile", "Variable profile");
+
+% printing norm errors in function of dt
+figure()
+% plot(flip(T./NT), flip(e_L2), '-o');
+plot(flip(1./NT)*100, flip(e_L2), '-o');
+title("Norm error as function of relative time step, $N_T$ = " + mesh_const + " $N_X$");
+% xlabel("$\Delta t$ [m]");
+xlabel("$\Delta t/T$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
+grid on
+hold on
+% plot(flip(T./NT), flip(e_L2_var), '-o');
+plot(flip(1./NT)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
 
 %%
