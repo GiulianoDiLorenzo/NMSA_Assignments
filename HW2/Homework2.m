@@ -300,169 +300,61 @@ hold on
 plot(flip(1./NT)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
 
-%%
+%% Looping with different NT, keeping NX
+% this block loops the computation for both constant and variable profile S(x)
+% takes a single NX = time_steps and computes NT = k*NX for each case
+% where k increases each time and is a refinement factor for the time domain
 
+time_steps = 100;       % (100)=10% of space domain
+NX = time_steps * ones(1, 20);
+NT = NX .* round(linspace(5, 25, 20));
 
+e_L2 = zeros(1, length(NX));
+e_L2_var = zeros(1, length(NX));
 
+for i = 1:length(NX)
 
-
-
-a1 =  c;
-a2 = -c;
-
-% Initial data
-% u0  = @(x) ...;     % u(x,0)
-% ut0 = @(x) ...;     % u_t(x,0)
-
-% % Initial conditions for system u_t = A u_x  (u_t + A u_x = 0)
-% v0  = @(x) 2*pi*sin(2*pi*x); % u_t(t=0)
-% up0 = @(x) 0.*x;             % u_x(t=0)
-
-% % Initial conditions for w_t = D w_x  (w_t + D w_x = 0)
-% % by using the transformation w(x,0) = T^(-1) u(x,0)
-% 
-% w0 = @(x) sqrt(1+c^2)/(2*c).*( 2*pi*sin(2*pi*x));
-% w1 = @(x) sqrt(1+c^2)/(2*c).*(-2*pi*sin(2*pi*x));
-
-% Neumann boundary conditions
-gp1 = @(t) 0.*t;
-gp2 = @(t) 0.*t;
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% menu
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% flag = menu('Please select a method',...
-%     'Forward-Euler/Central',...
-%     'Lax-Friedrichs',...
-%     'Lax-Wendroff',...
-%     'Upwind');
-% 
-% disp('Please wait ...');
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-flag = 3;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-% Initial conditions
-% w = [w_1, w_2]'; 
-% u = [u_1, u_2]';
-% SOL_w(1:NX+1,:) -> w_1; % SOL_w(NX+2:end,:) -> w_2;
-% the same for SOL_u
-
-
-SOL_w = zeros(2*(NX+1),NT+1);
-SOL_u = zeros(2*(NX+1),NT+1);
-
-% initial values
-for j = 1 : NX+1
-    SOL_w(j,1)      = w0(I(1) + (j-1)*dx);
-    SOL_w(NX+1+j,1) = w1(I(1) + (j-1)*dx);
-    SOL_u(j,1)      = v0(I(1) + (j-1)*dx);
-    SOL_u(NX+1+j,1) = up0(I(1) + (j-1)*dx);
-
-end
-
-
-for n = 1:NT
-    for k = 2:NX
-        
-        if flag == 1 % FCE scheme
-            SOL_w(j,n+1)      = SOL_w(j,n)      - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
-            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); % w_2
-        elseif flag == 2 % LF scheme
-            SOL_w(j,n+1)      = 0.5*(SOL_w(j+1,n)+SOL_w(j-1,n))           - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)); % w_1
-            SOL_w(NX+1+j,n+1) = 0.5*(SOL_w(NX+1+j+1,n)+SOL_w(NX+1+j-1,n)) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)); %w_2
-        elseif flag == 3 % LW scheme
-            SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
-                              + 0.5*lambda^2*a1^2*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
-            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
-                              + 0.5*lambda^2*a2^2*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
-        elseif flag == 4 % UPWIND
-            SOL_w(j,n+1) = SOL_w(j,n) - 0.5*lambda*a1*(SOL_w(j+1,n)-SOL_w(j-1,n)) ...
-                              + 0.5*lambda*abs(a1)*(SOL_w(j+1,n)-2*SOL_w(j,n)+SOL_w(j-1,n));
-            SOL_w(NX+1+j,n+1) = SOL_w(NX+1+j,n) - 0.5*lambda*a2*(SOL_w(NX+1+j+1,n)-SOL_w(NX+1+j-1,n)) ...
-                              + 0.5*lambda*abs(a2)*(SOL_w(NX+1+j+1,n)-2*SOL_w(NX+1+j,n)+SOL_w(NX+1+j-1,n));
-
-        end
-    end
+    dx = 1/NX(i);
+    dt = T/NT(i);
+    lambda = gamma*dt/dx;
     
-    % Boundary conditions
-    % can be improved by adding external end points --> SOL_w(1:2*(NX+1)+4,:)
-    SOL_w(NX+2,n+1) = SOL_w(NX+3,n+1); %constant extrapolation w_2(0,t) = w_2(h,t)
-    % update w_1(0,t)
-    SOL_w(1,n+1) = sqrt(1+c^2)/c*gp1((n+1)*dt) + SOL_w(NX+2,n+1);
-
-
-    SOL_w(NX+1,n+1) = SOL_w(NX,n+1);  %constant extrapolation w_1(L,t) = w_1(L-h,t)
-    % update w_2(L,t)
-    SOL_w(end,n+1)  = SOL_w(NX+1,n+1)-sqrt(1+c^2)/c*gp2((n+1)*dt);
-
+    x = linspace(0, 1, NX(i)).';
+    t = linspace(0, T, NT(i));
     
-    % compute u by using the transformation u = T w
-    % w = [w_1, w_2] = [u_t, u_x];
-    SOL_u(1:NX+1,n+1)   = c/sqrt(1+c^2)*(SOL_w(1:NX+1,n+1)-SOL_w(NX+2:end,n+1));
-    SOL_u(NX+2:end,n+1) = 1/sqrt(1+c^2)*(SOL_w(1:NX+1,n+1)+SOL_w(NX+2:end,n+1));
+    S = (1+2*x).^2;
+    Sx = 4 + 8*x;
+    
+    uex     = - cos(pi/2*x) * cos(3*pi*t);
+    
+    ux      = pi/2 * sin(pi/2*x) * cos(3*pi*t);
+    ut      = 3*pi * cos(pi/2*x) * sin(3*pi*t);
+    uxx     = (pi/2)^2 * cos(pi/2*x) * cos(3*pi*t);
+    utt     = (3*pi)^2 * cos(pi/2*x) * cos(3*pi*t);
+    
+    u_0 = uex(:,1);
+    u_1 = ut(:,1);
+    
+    f  = S_const * (utt - gamma^2 * uxx);
+    f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
+    
+    sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (1 * T));
+    
+    sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (1 * T));
+
 end
 
-% Computation of the L2-error for t=T
-SOLu_EX  = zeros(NX+1,1);
-SOLut_EX = zeros(NX+1,1);
-SOLux_EX = zeros(NX+1,1);
-
-for j = 1:NX+1
-    SOLu_EX(j,1)  = u(I(1) + (j-1)*dx,NT*dt);
-    SOLut_EX(j,1) = ut(I(1) + (j-1)*dx,NT*dt);
-    SOLux_EX(j,1) = ux(I(1) + (j-1)*dx,NT*dt);
-
-end
-L2ut_ERR   = norm(SOLut_EX-SOL_u(1:NX+1,n+1),2)*dx^0.5;
-L1ut_ERR   = norm(SOLut_EX-SOL_u(1:NX+1,n+1),1)*dx;
-LINFut_ERR = norm(SOLut_EX-SOL_u(1:NX+1,n+1),Inf);
-
-L2ux_ERR   = norm(SOLux_EX-SOL_u(NX+2:end,n+1),2)*dx^0.5;
-L1ux_ERR   = norm(SOLux_EX-SOL_u(NX+2:end,n+1),1)*dx;
-LINFux_ERR = norm(SOLux_EX-SOL_u(NX+2:end,n+1),Inf);
-
-Err_t = [L2ut_ERR, L1ut_ERR, LINFut_ERR]
-Err_x = [L2ux_ERR, L1ux_ERR, LINFux_ERR]
-
-
-% Visualization
-time = ones(NX+1,1)*linspace(0,T,NT+1);
-space = linspace(I(2),I(1),NX+1)'*ones(1,NT+1);
-surf(time,space,SOL_u(1:NX+1,:),'EdgeColor','none');
-title('u_t','FontSize',16);
-xlabel('time t','FontSize',16);
-ylabel('space x','FontSize',16);
-view(2);
-
-figure;
-surf(time,space,SOL_u(NX+2:end,:),'EdgeColor','none');
-title('u_x','FontSize',16);
-xlabel('time t','FontSize',16);
-ylabel('space x','FontSize',16);
-view(2);
-
-%charachteristic variables
-figure;
-subplot(1,2,1);
-surf(time,space,SOL_w(1:NX+1,:),'EdgeColor','none');
-title('w_1','FontSize',16);
-xlabel('time t','FontSize',16);
-ylabel('space x','FontSize',16);
-view(2);
-subplot(1,2,2);
-surf(time,space,SOL_w(NX+2:end,:),'EdgeColor','none');
-title('w_2','FontSize',16);
-xlabel('time t','FontSize',16);
-ylabel('space x','FontSize',16);
-view(2);
-
-
-
-
+% printing norm errors in function of dt/T
+figure()
+% plot(flip(T./NT), flip(e_L2), '-o');
+plot(flip(1./NT)*100, flip(e_L2), '-o');
+title("Norm error as function of relative time step, $N_X$ = " + time_steps);
+% xlabel("$\Delta t$ [m]");
+xlabel("$\Delta t/T$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
+grid on
+hold on
+% plot(flip(T./NT), flip(e_L2_var), '-o');
+plot(flip(1./NT)*100, flip(e_L2_var), '-o');
+legend("Constant profile", "Variable profile");
