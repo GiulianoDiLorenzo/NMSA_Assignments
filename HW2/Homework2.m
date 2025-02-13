@@ -58,10 +58,10 @@ x = linspace(I(1), I(2), NX).';
 % time domain definition: 0 to T in NT elements
 t = linspace(0, T, NT);
 
-% section definition
+% section definitions
 S_const = 1;
 S = (1+2*x).^2;
-Sx = 4 + 8*x;   % derivative in x of S_var
+Sx = 4 + 8*x;   % derivative in x of S
 
 %% Point 2, exact solution
 % exact solution for computing the error
@@ -84,6 +84,11 @@ f  = S_const * (utt - gamma^2 * uxx);
 f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
 
 %% Point 2, constant cross-section, leap-frog scheme
+% this block computes the numerical solution for S(x)=1
+% prints the solution surface
+% computes the L2-error
+% prints the approximation error surface
+
 sol = computeSolutionConstant(NX, NT, dt, u_0, u_1, lambda, f);
 
 % printing solution as surface
@@ -174,6 +179,11 @@ xlabel("$x$ [m]");
 ylabel("$u_h(x,t)$");
 
 %% Point 3, variable cross-section, leap-frog scheme
+% this block computes the numerical solution for S(x)=(1+2x)^2
+% prints the solution surface
+% computes the L2-error
+% prints the approximation error surface
+
 sol_var = computeSolutionVariable(NX, NT, dx, dt, S, u_0, u_1, lambda, f_var);
 
 % printing solution as surface
@@ -232,6 +242,10 @@ colorbar
 % end
 
 %% Looping with different NX and NT
+% this block loops the computation for both constant and variable profile S(x)
+% takes different NX and computes NT = k*NX for each case
+% where k=mesh_const is a refinement factor for the time domain
+
 mesh_const = 10;     % refinement factor (tried 5, 10 and 15)
 NX = 100*linspace(1,20,20);
 NT = mesh_const*NX;
@@ -272,7 +286,7 @@ for i = 1:length(NX)
 
 end
 
-% printing norm errors in function of dx
+% printing norm errors in function of dx/L
 figure()
 % plot(flip(1./NX), flip(e_L2), '-o');
 plot(flip(1./NX)*100, flip(e_L2), '-o');
@@ -286,7 +300,7 @@ hold on
 plot(flip(1./NX)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
 
-% printing norm errors in function of dt
+% printing norm errors in function of dt/T
 figure()
 % plot(flip(T./NT), flip(e_L2), '-o');
 plot(flip(1./NT)*100, flip(e_L2), '-o');
