@@ -29,7 +29,7 @@ sol(1,:) = sol(2,:);                        % 1st condition
 
 for n = 2:NT      % evaluating n+1, up to NT to consider virtual line
 
-    for k = 2:NX-1
+    for k = 2:NX
         sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n)) + dt^2 * f(k-1,n);
     end
 
