@@ -43,8 +43,8 @@ NX = 800;
 % space step / spatial mesh size
 dx = L/NX;
 
-% number of time steps (minimum 5*NX for stability)
-NT = 5*NX;
+% number of time steps (minimum T*NX for stability)
+NT = T*NX;
 % time step / temporal mesh size
 dt = T/NT;
 
@@ -240,12 +240,12 @@ colorbar
 %     hold off;
 % end
 
-%% Looping with different NX and NT
+%% Looping with different NX and NT (using NT = k*NX)
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NX and computes NT = k*NX for each case
 % where k=mesh_const is a refinement factor for the time domain
 
-mesh_const = 10;     % refinement factor (tried 5, 10 and 15)
+mesh_const = 5;     % refinement factor (tried 5, 10 and 15)
 NX = 100*linspace(1,20,20);
 NT = mesh_const*NX;
 
@@ -315,11 +315,11 @@ legend("Constant profile", "Variable profile");
 
 %% Looping with different NT, keeping NX
 % this block loops the computation for both constant and variable profile S(x)
-% takes a single NX = time_steps and computes NT = k*NX for each case
+% takes a single NX = space_steps and computes NT = k*NX for each case
 % where k increases each time and is a refinement factor for the time domain
 
-time_steps = 100;       % (100)=10% of space domain
-NX = time_steps * ones(1, 20);
+space_steps = 100;       % (100)=1% of space domain
+NX = space_steps * ones(1, 20);
 NT = NX .* round(linspace(5, 25, 20));
 
 e_L2 = zeros(1, length(NX));
@@ -362,7 +362,7 @@ end
 figure()
 % plot(flip(T./NT), flip(e_L2), '-o');
 plot(flip(1./NT)*100, flip(e_L2), '-o');
-title("Norm error as function of relative time step, $N_X$ = " + time_steps);
+title("Norm error as function of relative time step, $N_X$ = " + space_steps + " (" + L*100/space_steps + " \%)");
 % xlabel("$\Delta t$ [m]");
 xlabel("$\Delta t/T$ [\%]");
 ylabel("$||u_h-u_{ex}||_{L^2}$");
@@ -372,92 +372,58 @@ hold on
 plot(flip(1./NT)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
 
-%% Point 4, parameters
-% velocity, length and gamma
-c = 2;
-L = 1;
-gamma = c/L;
+%% Looping with different NX, keeping NT
+% this block loops the computation for both constant and variable profile S(x)
+% takes a single NT = time_steps and computes NX = NT/k for each case
+% where k decreases each time and is a refinement factor for the space domain
 
-% space domain (0,1) and time domain (0,T)
-T = 5;
+time_steps = 500;       % (500)=1% of space domain
+NT = time_steps * ones(1, 20);
+NX = round(NT .* (linspace(1, 20, 20)/100));
 
-% number of space steps
-NX = 1600;
-% space step / spatial mesh size
-dx = L/NX;
+e_L2 = zeros(1, length(NX));
+e_L2_var = zeros(1, length(NX));
 
-% number of time steps (minimum 5*NX for stability)
-NT = 5*NX;
-% time step / temporal mesh size
-dt = T/NT;
+for i = 1:length(NX)
 
-% lambda
-lambda = gamma*dt/dx;
+    dx = L/NX(i);
+    dt = T/NT(i);
+    lambda = gamma*dt/dx;
+    
+    x = linspace(0, L, NX(i)).';
+    t = linspace(0, T, NT(i));
+    
+    S = (1+2*x).^2;
+    Sx = 4 + 8*x;
+    
+    uex     = - cos(pi/2*x) * cos(3*pi*t);
+    
+    ux      = pi/2 * sin(pi/2*x) * cos(3*pi*t);
+    ut      = 3*pi * cos(pi/2*x) * sin(3*pi*t);
+    uxx     = (pi/2)^2 * cos(pi/2*x) * cos(3*pi*t);
+    utt     = (3*pi)^2 * cos(pi/2*x) * cos(3*pi*t);
+    
+    u_0 = uex(:,1);
+    u_1 = ut(:,1);
+    
+    f  = S_const * (utt - gamma^2 * uxx);
+    f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
+    
+    sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
+    
+    sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
 
-% space domain definition: 0 to L in NX elements
-x = linspace(0, L, NX).';
-
-% time domain definition: 0 to T in NT elements
-t = linspace(0, T, NT);
-
-% % initial conditions
-% u_0 = zeros(NX, 1);
-% u_1 = zeros(NX, 1);
-
-ux_0 = -1/2 * (sin((pi*(t-0.1))/0.05) + abs(sin((pi*(t-0.1))/0.05)));
-% extending ux_0
-ux_0 = [-1/2 * (sin((pi*(-dt-0.1))/0.05) + abs(sin((pi*(-dt-0.1))/0.05))), ux_0];
-
-
-% % variable section definitions
-% S = ...;
-% Sx = ...;
-
-%% Point 4, constant profile
-% this block computes the numerical solution for S(x)=1
-% prints the solution surface
-
-% initializing the solution;
-sol = zeros(NX+1, NT+1);
-
-% applying the boundary conditions
-% sol(2:end, 2) = 0;                      % 3rd condition
-% sol(2:end, 1) = sol(2:end, 2);          % 4th condition
-% sol(end,:) = 0;                         % 2nd condition
-sol(1,:) = sol(2,:) - dx * ux_0;            % 1st condition
-
-for n = 2:NT      % evaluating n+1, up to NT to consider virtual line
-
-    for k = 2:NX-1
-        sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n));
-    end
-
-    sol(1,n+1) = sol(2,n+1) - dx * ux_0(n+1);                % 1st condition
 end
 
-% discarding virtual lines (1,:) and (:,1)
-sol = sol(2:end, 2:end);
-
-% printing solution as surface
+% printing norm errors in function of dx/L
 figure()
-[X_axis, T_axis] = ndgrid(x, t);
-surf(X_axis, T_axis, sol);
-shading interp
-title("Numerical solution with constant cross-section S(x) = 1 m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
-xlabel('$x$ [m]');
-ylabel('$t$ [s]');
-zlabel('$u_h(x,t)$');
-colorbar
-
-%% EXTRA - Plotting solution comparison with constant cross-section
-figure()
-for n = 1:NT
-    plot(x, sol(:,n));
-    title("Solution evolution (point 4) with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
-    xlabel('$x$ [m]');
-    ylabel('$u(x,t), \quad u_{ex}(x,t)$');
-    %ylim([-1,1]);
-    grid on;
-    pause(1e-5);
-    hold off;
-end
+plot(flip(1./NX)*100, flip(e_L2), '-o');
+title("Norm error as function of relative time step, $N_T$ = " + time_steps + " (" + T*100/time_steps + " \%)");
+xlabel("$\Delta x/L$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
+grid on
+hold on
+plot(flip(1./NX)*100, flip(e_L2_var), '-o');
+legend("Constant profile", "Variable profile");
