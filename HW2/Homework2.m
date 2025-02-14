@@ -29,20 +29,19 @@ set(groot, 'DefaultTextInterpreter', 'latex', ...           % interpreter Latex 
            'DefaultLegendLocation', 'best' ...              % legend position
            );
 
-%% Parameters
+%% Point 2, parameters
 % velocity, length and gamma
 c = 1;
 L = 1;
 gamma = c/L;
 
 % space domain (0,1) and time domain (0,T)
-I = [0 L];
 T = 5;
 
 % number of space steps
 NX = 800;
 % space step / spatial mesh size
-dx = (I(2) - I(1))/NX;
+dx = L/NX;
 
 % number of time steps (minimum 5*NX for stability)
 NT = 5*NX;
@@ -53,7 +52,7 @@ dt = T/NT;
 lambda = gamma*dt/dx;
 
 % space domain definition: 0 to L in NX elements
-x = linspace(I(1), I(2), NX).';
+x = linspace(0, L, NX).';
 
 % time domain definition: 0 to T in NT elements
 t = linspace(0, T, NT);
@@ -83,7 +82,7 @@ u_1 = ut(:,1);              % u_1 = du/dt(x,0)
 f  = S_const * (utt - gamma^2 * uxx);
 f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
 
-%% Point 2, constant cross-section, leap-frog scheme
+%% Point 2, constant profile
 % this block computes the numerical solution for S(x)=1
 % prints the solution surface
 % computes the L2-error
@@ -104,7 +103,7 @@ colorbar
 
 % approximation difference (in space and time)
 err = sol - uex;
-e_L2 = sqrt(sum(sum(err.^2)) * dx * dt / (1 * 5));
+e_L2 = sqrt(sum(sum(err.^2)) * dx * dt / (L * T));
 
 % plotting error (in abs) as surface
 figure()
@@ -150,11 +149,11 @@ colorbar
 NX = 800;
 NT = 2000;
 
-dx = (I(2) - I(1))/NX;
+dx = L/NX;
 dt = T/NT;
 lambda = gamma*dt/dx;
 
-x = linspace(I(1), I(2), NX).';
+x = linspace(0, L, NX).';
 t = linspace(0, T, NT);
 
 uex     = - cos(pi/2*x) * cos(3*pi*t);
@@ -163,8 +162,8 @@ ut      = 3*pi * cos(pi/2*x) * sin(3*pi*t);
 uxx     = (pi/2)^2 * cos(pi/2*x) * cos(3*pi*t);
 utt     = (3*pi)^2 * cos(pi/2*x) * cos(3*pi*t);
 
-u_0 = uex(:,1);             % u_0 = u(x,0)
-u_1 = ut(:,1);              % u_1 = du/dt(x,0)
+u_0 = uex(:,1);
+u_1 = ut(:,1);
 f  = S_const * (utt - gamma^2 * uxx);
 
 sol = computeSolutionConstant(NX, NT, dt, u_0, u_1, lambda, f);
@@ -178,7 +177,7 @@ title("Numerical solution with constant cross-section S(x) = 1 m ($N_X$ = " + NX
 xlabel("$x$ [m]");
 ylabel("$u_h(x,t)$");
 
-%% Point 3, variable cross-section, leap-frog scheme
+%% Point 3, variable profile
 % this block computes the numerical solution for S(x)=(1+2x)^2
 % prints the solution surface
 % computes the L2-error
@@ -199,7 +198,7 @@ colorbar
 
 % approximation difference (in space and time)
 err_var = sol_var - uex;
-e_L2_var = sqrt(sum(sum(err.^2)) * dx * dt / (1 * 5));
+e_L2_var = sqrt(sum(sum(err.^2)) * dx * dt / (L * T));
 
 % plotting error (in abs) as surface
 figure()
@@ -255,11 +254,11 @@ e_L2_var = zeros(1, length(NX));
 
 for i = 1:length(NX)
 
-    dx = 1/NX(i);
+    dx = L/NX(i);
     dt = T/NT(i);
     lambda = gamma*dt/dx;
     
-    x = linspace(0, 1, NX(i)).';
+    x = linspace(0, L, NX(i)).';
     t = linspace(0, T, NT(i));
     
     S = (1+2*x).^2;
@@ -279,16 +278,16 @@ for i = 1:length(NX)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
-    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (1 * T));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
     
     sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (1 * T));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
 
 end
 
 % printing norm errors in function of dx/L
 figure()
-% plot(flip(1./NX), flip(e_L2), '-o');
+% plot(flip(L./NX), flip(e_L2), '-o');
 plot(flip(1./NX)*100, flip(e_L2), '-o');
 title("Norm error as function of relative space step, $N_T$ = " + mesh_const + " $N_X$");
 % xlabel("$\Delta x$ [m]");
@@ -296,7 +295,7 @@ xlabel("$\Delta x/L$ [\%]");
 ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
-% plot(flip(1./NX), flip(e_L2_var), '-o');
+% plot(flip(L./NX), flip(e_L2_var), '-o');
 plot(flip(1./NX)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
 
@@ -328,11 +327,11 @@ e_L2_var = zeros(1, length(NX));
 
 for i = 1:length(NX)
 
-    dx = 1/NX(i);
+    dx = L/NX(i);
     dt = T/NT(i);
     lambda = gamma*dt/dx;
     
-    x = linspace(0, 1, NX(i)).';
+    x = linspace(0, L, NX(i)).';
     t = linspace(0, T, NT(i));
     
     S = (1+2*x).^2;
@@ -352,10 +351,10 @@ for i = 1:length(NX)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
-    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (1 * T));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
     
     sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (1 * T));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
 
 end
 
@@ -372,3 +371,93 @@ hold on
 % plot(flip(T./NT), flip(e_L2_var), '-o');
 plot(flip(1./NT)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
+
+%% Point 4, parameters
+% velocity, length and gamma
+c = 2;
+L = 1;
+gamma = c/L;
+
+% space domain (0,1) and time domain (0,T)
+T = 5;
+
+% number of space steps
+NX = 1600;
+% space step / spatial mesh size
+dx = L/NX;
+
+% number of time steps (minimum 5*NX for stability)
+NT = 5*NX;
+% time step / temporal mesh size
+dt = T/NT;
+
+% lambda
+lambda = gamma*dt/dx;
+
+% space domain definition: 0 to L in NX elements
+x = linspace(0, L, NX).';
+
+% time domain definition: 0 to T in NT elements
+t = linspace(0, T, NT);
+
+% % initial conditions
+% u_0 = zeros(NX, 1);
+% u_1 = zeros(NX, 1);
+
+ux_0 = -1/2 * (sin((pi*(t-0.1))/0.05) + abs(sin((pi*(t-0.1))/0.05)));
+% extending ux_0
+ux_0 = [-1/2 * (sin((pi*(-dt-0.1))/0.05) + abs(sin((pi*(-dt-0.1))/0.05))), ux_0];
+
+
+% % variable section definitions
+% S = ...;
+% Sx = ...;
+
+%% Point 4, constant profile
+% this block computes the numerical solution for S(x)=1
+% prints the solution surface
+
+% initializing the solution;
+sol = zeros(NX+1, NT+1);
+
+% applying the boundary conditions
+% sol(2:end, 2) = 0;                      % 3rd condition
+% sol(2:end, 1) = sol(2:end, 2);          % 4th condition
+% sol(end,:) = 0;                         % 2nd condition
+sol(1,:) = sol(2,:) - dx * ux_0;            % 1st condition
+
+for n = 2:NT      % evaluating n+1, up to NT to consider virtual line
+
+    for k = 2:NX-1
+        sol(k,n+1) = 2*sol(k,n) - sol(k,n-1) + lambda^2 * (sol(k+1,n) - 2*sol(k,n) + sol(k-1,n));
+    end
+
+    sol(1,n+1) = sol(2,n+1) - dx * ux_0(n+1);                % 1st condition
+end
+
+% discarding virtual lines (1,:) and (:,1)
+sol = sol(2:end, 2:end);
+
+% printing solution as surface
+figure()
+[X_axis, T_axis] = ndgrid(x, t);
+surf(X_axis, T_axis, sol);
+shading interp
+title("Numerical solution with constant cross-section S(x) = 1 m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ")");
+xlabel('$x$ [m]');
+ylabel('$t$ [s]');
+zlabel('$u_h(x,t)$');
+colorbar
+
+%% EXTRA - Plotting solution comparison with constant cross-section
+figure()
+for n = 1:NT
+    plot(x, sol(:,n));
+    title("Solution evolution (point 4) with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+    xlabel('$x$ [m]');
+    ylabel('$u(x,t), \quad u_{ex}(x,t)$');
+    %ylim([-1,1]);
+    grid on;
+    pause(1e-5);
+    hold off;
+end
