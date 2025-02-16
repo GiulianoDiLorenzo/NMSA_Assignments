@@ -24,7 +24,7 @@ L2_err = compute_L2_Error(error, h);
 H1_err = L2_err^2;
 
 error_x = ( error(2:end) - error(1:end-1) ) / femregion.h;
-error_x = [error_x; error_x(end)];
+error_x = [error_x, error_x(end)];
 
 H1_err = sqrt( H1_err + compute_L2_Error(error_x, h)^2 );
 
