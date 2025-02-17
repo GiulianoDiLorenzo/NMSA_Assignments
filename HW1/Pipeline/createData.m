@@ -24,7 +24,7 @@ if strcmp(TestName,'TestHW1_2a')
     Data.omega = omega;
 
     x = linspace(0,L, numEl);
-    Data.x = x;
+    Data.x = x.';
 
     % Compute mu(x) values
     mu_values = Data.mu(x);
@@ -91,7 +91,7 @@ elseif strcmp(TestName,'TestHW1_2b')
 
     Data.omega = omega;
 
-    x = linspace(0,L, numEl);
+    x = linspace(0,L, numEl).';
     Data.x = x;
 
     % Compute mu(x) values
@@ -100,11 +100,11 @@ elseif strcmp(TestName,'TestHW1_2b')
     dmu_dx = diff(mu_values) ./ diff(x);
 
     % Putting the last point equal its predecessor
-    Data.mu_x =  [dmu_dx, dmu_dx(end)];  % NaN for the last value (since diff reduces size)
+    Data.mu_x =  [dmu_dx; dmu_dx(end)];  % NaN for the last value (since diff reduces size)
     
     % d(mu * d(u_ex/dx))/dx
     d_mu_u_ex_x = diff(Data.mu(x) .* Data.uex_x(x) ) ./ diff(x);
-    Data.d_mu_u_ex_x  =  [d_mu_u_ex_x , d_mu_u_ex_x(end)];  % NaN for the last value (since diff reduces size)
+    Data.d_mu_u_ex_x  =  [d_mu_u_ex_x ; d_mu_u_ex_x(end)];  % NaN for the last value (since diff reduces size)
 
     Data.alpha = Data.mu(L) .* Data.rho(L) * Data.omega ; % We're interested only in alpha(end), i.e. at x=L
     
@@ -135,7 +135,7 @@ elseif strcmp(TestName,'TestHW1_3a')
     Data.c = @(x) ones(size(x));
     Data.rho = @(x) 5* ones(size(x));
 
-    x = linspace(0,L, numEl);
+    x = linspace(0,L, numEl).';
     Data.x = x;
 
     Data.mu =@(x)  Data.rho(x);
@@ -149,7 +149,7 @@ elseif strcmp(TestName,'TestHW1_3a')
     dmu_dx = diff(mu_values) ./ diff(x);
 
     % Putting the last point equal its predecessor
-    Data.mu_x =  [dmu_dx, dmu_dx(end)];  % NaN for the last value (since diff reduces size)
+    Data.mu_x =  [dmu_dx; dmu_dx(end)];  % NaN for the last value (since diff reduces size)
     
     % d(mu * d(u_ex/dx))/dx
     % d_mu_u_ex_x = diff(Data.mu(x) .* Data.uex_x(x) ) ./ diff(x);
@@ -159,7 +159,7 @@ elseif strcmp(TestName,'TestHW1_3a')
 
     Data.alpha = Data.mu(L) .* Data.rho(L) * Data.omega ; % We're interested only in alpha(end), i.e. at x=L
     
-    Data.force = @(x) zeros(size(x)).';
+    Data.force = @(x) zeros(size(x));
 
     %  % Non constant profiles
     % Data.force = @(x) Data.rho(x) .* Data.omega .* Data.uex(x) + Data.d_mu_u_ex
@@ -185,7 +185,7 @@ elseif strcmp(TestName,'TestHW1_3b')
     Data.c = @(x) (x >= 0 & x <= L/2) .* 0.1 + (x > L/2 & x <= L) .* 2;
     Data.rho = @(x) 5* ones(size(x));
 
-    x = linspace(0,L, numEl);
+    x = linspace(0,L, numEl).';
     Data.x = x;
 
     Data.mu =@(x)  (Data.c(x)).^2 .*Data.rho(x);
@@ -199,7 +199,7 @@ elseif strcmp(TestName,'TestHW1_3b')
     dmu_dx = diff(mu_values) ./ diff(x);
 
     % Putting the last point equal its predecessor
-    Data.mu_x =  [dmu_dx, dmu_dx(end)];  % NaN for the last value (since diff reduces size)
+    Data.mu_x =  [dmu_dx; dmu_dx(end)];  % NaN for the last value (since diff reduces size)
     
     % d(mu * d(u_ex/dx))/dx
     % d_mu_u_ex_x = diff(Data.mu(x) .* Data.uex_x(x) ) ./ diff(x);
@@ -208,7 +208,7 @@ elseif strcmp(TestName,'TestHW1_3b')
 
     Data.alpha = Data.mu(L) .* Data.rho(L) * Data.omega ; % We're interested only in alpha(end), i.e. at x=L
     
-    Data.force = @(x) zeros(size(x)).';
+    Data.force = @(x) zeros(size(x));
 
     %  % Non constant profiles
     % Data.force = @(x) Data.rho(x) .* Data.omega .* Data.uex(x) + Data.d_mu_u_ex

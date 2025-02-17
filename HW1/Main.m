@@ -67,6 +67,7 @@ L{end+1} =  'exact solution';
 for i = 1:length(datas)
     x_axis = datas(i).data.x;
     sol_num_i = datas(i).sol;
+    % disp([' i =', num2str(i), ' size(sol_num) = ', num2str(size(sol_num_i)) ]);
 
     plot(x_axis , sol_num_i , markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
 
@@ -103,7 +104,7 @@ ylabel('$log \left( || u_{ex} - u_{num}||_{L^2} \right)$', Interpreter='latex')
 xlabel('$h$ [m]', Interpreter='latex');
 
 
-% print('Q2a_L2_error', '-dpng', '-r300'); % 300 DPI resolution
+print('Q2a_L2_error', '-dpng', '-r300'); % 300 DPI resolution
 
 slopes = zeros(length(datas) -1,1);
 for i = 2 :length(datas)
@@ -193,7 +194,7 @@ titleText = sprintf('Graph of the L2 error ||u_{ex}-u_{num}||, as a function of 
 
 figure();
 
-loglog(h_vals, L2_errors, '-+r', MarkerSize=8);
+semilogy(h_vals, L2_errors, '-+r', MarkerSize=8);
 grid on;
 
 title(titleText);
@@ -207,15 +208,15 @@ slopes = zeros(length(datas) -1,1);
 for i = 2 :length(datas)
     slopes(i-1) = ( log(L2_errors(1) - L2_errors(i)) ) / log((h_vals(1) - h_vals(i) ));
 end
+
 avg_slope = mean(slopes);
-% slope =  ( log(L2_errors(1) - L2_errors(5)) ) / log((h_vals(1) - h_vals(5) ))
 
 %% Question 3a
 L = 5;
 f0 = 3;
 N_pts = 1 + 30 * f0 * L;
 
-omegaList = [0.1 , 1, 5, 10, 20];
+omegaList = [0.1 , 1 , 2 , 5];
 
 TestName = 'TestHW1_3a';
 
@@ -229,10 +230,10 @@ for i = 1 : length(omegaList)
     [sol, mesh, data] = getResults(Data, N_pts);
 
     % Store results in the datas structure
-    datas(i).n_pts = N_pts;  % Store nEl value
-    datas(i).sol = sol;  % Store solution
-    datas(i).mesh = mesh; % Store mesh structure
-    datas(i).data = data; % Store data structure
+    datas(i).n_pts = N_pts;  % Store N_pts value
+    datas(i).sol = sol;      % Store solution
+    datas(i).mesh = mesh;    % Store mesh structure
+    datas(i).data = data;    % Store data structure
 end
 
 
@@ -243,6 +244,9 @@ figure();
 for i = 1:length(datas)
     x_axis = datas(i).data.x;
     sol_num_i = datas(i).sol;
+
+
+    disp(size(sol_num_i));
 
     plot(x_axis , sol_num_i ); % , markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
     hold on;
@@ -261,7 +265,7 @@ L = 5;
 f0 = 3;
 N_pts = 1 + 30 * f0 * L;
 
-omegaList = [0.1 , 1, 2, 5];
+omegaList = [0.5 , 1, 1.5, 5 , 20];
 
 TestName = 'TestHW1_3b';
 
@@ -301,14 +305,14 @@ xlabel('x [m]');
 ylabel('amplitude');
 
 %% Question 4 
-T = 5;
+T = 2;
 dt = 1e-3;
 N_inst = T / dt + 1;
 t = linspace(0,T, N_inst );
 
 L = 5;
 f0 = 3;
-omegaList = [0.1 , 1, 5, 10];
+omegaList = [0.5 , 1, 1.5, 5 , 10];
 
 N_pts = 1 + 30 * f0 * L;
 
@@ -340,7 +344,7 @@ for i = 1:length(omegaList)
     
     % Create surface plot
     subplot(ceil(length(omegaList)/2), 2,i);
-    surf(dataSlice.');
+    surf(dataSlice);
     
     % Formatting
     title(['Surface Plot for \omega = ', num2str(omegaList(i))]);

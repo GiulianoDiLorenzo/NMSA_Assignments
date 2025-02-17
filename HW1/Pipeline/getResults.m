@@ -17,7 +17,7 @@ plotPhi = false;
 [Phi] = buildPhi(Mesh, plotPhi);
 
 % % Mass matrix assembly;
-fprintf('Building Matrices and Vectors ...\n');
+fprintf('Building M ...\n');
 [M] = buildM(Data, Mesh, Phi);
 
 % Stiffness matrix assembly;
@@ -28,11 +28,11 @@ fprintf('Building A ...\n');
 fprintf('Building R* ...\n');
 [R_star] = buildR_star(Data,Mesh);
 
-fprintf('Building M* ...\n');
+fprintf('Building M* = ( w * M - A - R* ) ...\n');
 M_star = Data.omega * M - A - R_star;
 
 % Excitation force vector
-fprintf('Building F...\n');
+fprintf('Building righ hand side...\n');
 F = Mesh.h * Data.force(Data.x);
 
 % Boundary conditions vector 
@@ -43,13 +43,10 @@ F = F + R_bc;
 %==========================================================================
 % Invert system for solution and extract u;
 %==========================================================================
-fprintf('Computing numerical solution...\n\n');
+fprintf('Computing numerical solution...\n');
 sol = (M_star)\F;
 
 sol = real(sol);
-% sol = sol ./ ( max(sol)) );
-% sol = abs(sol).* exp(1i * angle(sol));
-
 
 
 end
