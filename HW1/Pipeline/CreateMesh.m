@@ -1,4 +1,4 @@
-function [Region] = CreateMesh(Data,nEl)
+function [Mesh] = CreateMesh(Data,nEl)
 %% [Region] = C_create_mesh(Data, nEl)
 %=========================================================================
 % Creates regular mesh
@@ -27,20 +27,18 @@ xL = Data.domain(2);
 
 %================================================
 % Geometrical info
- nVert = nEl + 1;                   % vertices of the mesh
- p = linspace(x0,xL,nVert);         % points of the mesh
- t = [[1:nVert-1]' [2:nVert]']';    % intervals of the mesh, in terms of indexes
- MeshSize = (xL-x0)./nEl;           % mesh size of the domain
+ n_pts =nEl;                   % vertices of the mesh
+ p = linspace(x0,xL,n_pts);         % points of the mesh
+ t = [[1:n_pts-1]' [2:n_pts]']';    % intervals of the mesh, in terms of indexes
+ MeshSize = (xL-x0)./(nEl-1);           % mesh size of the domain
 %================================================
 
 % Mesh data structure
-Region = struct('dim',1,...
+Mesh = struct('dim',1,...
                'domain',Data.domain,...
                'h',MeshSize,...
-               'nvert',nVert,...
-               'ne',nEl,...
+               'n_pts',n_pts,...
                'coord',p',...               %coordinates of the mesh points
-               'boundary_points',[x0,xL],...
-               'connectivity',t);           % intervals of the mesh, in terms of indexes
+               'boundary_points',[x0,xL]);
            
            

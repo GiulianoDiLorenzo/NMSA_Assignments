@@ -1,26 +1,12 @@
-function [A] = buildA(Data,Femregion, Phi)
-    %==========================================================================
-% Build the local mass matrix for the term (uv)
-%==========================================================================
-%    called in C_matrix1D.m
-%
-%    INPUT:
-%          dphiq       : (array real) evaluation of the basis function on
-%                        quadrature nodes
-%          w_1D        : (array real) quadrature weights
-%          nln         : (integer) number of local unknowns
-%          BJ          : Jacobian of the map 
-%
-%    OUTPUT:
-%          M_loc       :  (array real) Local mass matrix
+function [A] = buildA(Data,Mesh)
 
-num_pts = length(Femregion.dof);
-h =  Femregion.h;
+num_pts = Mesh.n_pts;
+h =  Mesh.h;
 mu = Data.mu;
-x = Femregion.coord;
+x = Mesh.coord;
 
 % A of size (N_h+1)x(N_h+1)
-A=zeros( num_pts , num_pts );
+A = zeros( num_pts , num_pts );
 
 % Computing the boundaries of A
 A(1,1) =  ( 2*mu(x(1)) + mu(x(2)) ) / (2*h);
@@ -28,6 +14,7 @@ A(num_pts,num_pts) = ( 2*mu(x(end-1)) + mu(x(end)) ) / (2*h);
 
 %Computing the superior triangular zone of A
 for i = 2:num_pts-1  
+
     % Storing points of interests
     x_prev = x(i-1);
     x_now  = x(i);
@@ -63,9 +50,4 @@ for i = 1 : num_pts-1
     A(i+1,i) = A(i,i+1);
 end
 
-% % % New considerations
-% A(1,:) = zeros(1, num_pts);
-% A(1,1) = 1;
-% 
-% A(end,:) = zeros(1, num_pts);
-% A(end,end) = 1;
+end

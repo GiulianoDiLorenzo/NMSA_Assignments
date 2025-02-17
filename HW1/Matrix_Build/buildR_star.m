@@ -1,9 +1,9 @@
-function [R_star] = buildR_star(Data,Femregion)
+function [R_star] = buildR_star(Data,Mesh)
 
 
-num_pts = length(Femregion.dof);
+num_pts = Mesh.n_pts;
 
-h =  Femregion.h;
+h =  Mesh.h;
 beta = Data.mu(0) / h;
 
 
