@@ -1,11 +1,9 @@
-function [R_bc] = buildR_bc(Data,Femregion)
+function [R_bc] = buildR_bc(Data,Mesh)
 
 
-num_pts = length(Femregion.dof);
-
-h =  Femregion.h;
+num_pts = Mesh.n_pts;
+h =  Mesh.h;
 beta = Data.mu(0) / h;
-
 
 % M of size (N_h+1)x(N_h+1)
 R_bc=zeros( num_pts , 1);

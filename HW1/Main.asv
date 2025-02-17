@@ -6,42 +6,42 @@ addpath Pipeline
 addpath Matrix_Build
 addpath Results
 
-% % Define the path to the 'results' folder
-resultsFolder = fullfile('HW1', 'Results');
-% 
-% % Make sure the folder exists (if not, create it)
-% if ~exist(resultsFolder, 'dir')
-%     mkdir(resultsFolder);
-% end
+% Define the path to the 'results' folder
+resultsFolder = fullfile('New_script', 'Results');
+
+% Make sure the folder exists (if not, create it)
+if ~exist(resultsFolder, 'dir')
+    mkdir(resultsFolder);
+end
 
 
 %% Question 2a
 TestName = 'TestHW1_2a';
 omega = 1;
 
-nEl = 4+1;
+nEl = 5+1;
 [Data] = createData(TestName, nEl, omega);
-[err1, sol1, mesh1, data1] = getResults(Data, nEl);
+[err1, sol1, mesh1, data1] = Pipeline(Data, nEl);
 
 
-nEl = 50+1;
+nEl = 100+1;
 [Data] = createData(TestName, nEl, omega);
-[err2, sol2, mesh2, data2] = getResults(Data, nEl);
+[err2, sol2, mesh2, data2] = Pipeline(Data, nEl);
 
 
 nEl = 200+1;
 [Data] = createData(TestName, nEl, omega);
-[err3, sol3, mesh3, data3] = getResults(Data, nEl);
+[err3, sol3, mesh3, data3] = Pipeline(Data, nEl);
+
+
+nEl = 300+1;
+[Data] = createData(TestName, nEl, omega);
+[err4, sol4, mesh4, data4] = Pipeline(Data, nEl);
 
 
 nEl = 400+1;
 [Data] = createData(TestName, nEl, omega);
-[err4, sol4, mesh4, data4] = getResults(Data, nEl);
-
-
-nEl = 800+1;
-[Data] = createData(TestName, nEl, omega);
-[err5, sol5, mesh5, data5] = getResults(Data, nEl);
+[err5, sol5, mesh5, data5] = Pipeline(Data, nEl);
 
 
 %% Question 2a - Results plotting
@@ -73,7 +73,9 @@ legend(L);
 xlabel('x [m]');
 ylabel('amplitude');
 
-print('Q2a_mesh_size_comp.png', '-r300'); % 300 DPI resolution
+savePath = fullfile('New_script', 'Results', );
+
+print('/Results/Q2a_mesh_size_comp', '-dpng', '-r300'); % 300 DPI resolution
 
 %% Question 2a - PLots of the L2-norm error
 
@@ -112,27 +114,27 @@ omega = 1;
 
 nEl = 5+1;
 [Data] = createData(TestName, nEl, omega);
-[err1, sol1, mesh1, data1] = getResults(Data, nEl);
+[err1, sol1, mesh1, data1] = Pipeline(Data, nEl);
 
 
 nEl = 100+1;
 [Data] = createData(TestName, nEl, omega);
-[err2, sol2, mesh2, data2] = getResults(Data, nEl);
+[err2, sol2, mesh2, data2] = Pipeline(Data, nEl);
 
 
 nEl = 200+1;
 [Data] = createData(TestName, nEl, omega);
-[err3, sol3, mesh3, data3] = getResults(Data, nEl);
+[err3, sol3, mesh3, data3] = Pipeline(Data, nEl);
 
 
 nEl = 300+1;
 [Data] = createData(TestName, nEl, omega);
-[err4, sol4, mesh4, data4] = getResults(Data, nEl);
+[err4, sol4, mesh4, data4] = Pipeline(Data, nEl);
 
 
 nEl = 400+1;
 [Data] = createData(TestName, nEl, omega);
-[err5, sol5, mesh5, data5] = getResults(Data, nEl);
+[err5, sol5, mesh5, data5] = Pipeline(Data, nEl);
 
 
 %% Question 2b - Results plotting
@@ -164,17 +166,19 @@ legend(L);
 xlabel('x [m]');
 ylabel('amplitude');
 
-print('Q2a_mesh_size_comp', '-dpng', '-r300'); % 300 DPI resolution
+print('/Results/Q2a_mesh_size_comp', '-dpng', '-r300'); % 300 DPI resolution
 
 
 
 %% Question 2b - PLots of the L2-norm error
 
-L2_errors = [err1 , err2 , err3 , ...
-             err4 , err5];
+L2_errors = [err0.L2_err , err1.L2_err , err2.L2_err , err3.L2_err , ...
+             err4.L2_err , err5.L2_err];
 
+H1_errors = [err0.H1_err , err1.H1_err , err2.H1_err , err3.H1_err , ...
+             err4.H1_err , err5.H1_err];
 
-stepsizes = [mesh1.h, mesh2.h, mesh3.h,mesh4.h, mesh5.h];
+stepsizes = [mesh0.h, mesh1.h, mesh2.h, mesh3.h,mesh4.h, mesh5.h];
 
 figure()
 
@@ -185,6 +189,66 @@ title('Graph of the L2 error $||u_{ex}-u_{num}||$, as a function of the stepsziz
 ylabel('$|| u_{ex} - u_{num}||_{L^2}$', Interpreter='latex')
 xlabel('$h$ [m]', Interpreter='latex')
 
+% 
+
 good_h = mesh4.h;
 
 
+%% Question 3a
+TestName = 'TestHW1_3a';
+omega = 1;
+
+
+
+nEl = 10+1; % Number of points in the mesh [0,L]
+omega = 1;
+
+[Data] = createData(TestName, nEl, omega);
+[err0, sol0, mesh0, data0] = Pipeline(Data, nEl);
+
+
+nEl = 100+1;
+[Data] = createData(TestName, nEl, omega);
+[err1, sol1, mesh1, data1] = Pipeline(Data, nEl);
+
+
+nEl = 500+1;
+[Data] = createData(TestName, nEl, omega);
+[err2, sol2, mesh2, data2] = Pipeline(Data, nEl);
+
+
+nEl = 1e3+1;
+[Data] = createData(TestName, nEl, omega);
+[err3, sol3, mesh3, data3] = Pipeline(Data, nEl);
+
+
+nEl = 5e3+1;
+[Data] = createData(TestName, nEl, omega);
+[err4, sol4, mesh4, data4] = Pipeline(Data, nEl);
+
+
+nEl = 1e4+1;
+[Data] = createData(TestName, nEl, omega);
+[err5, sol5, mesh5, data5] = Pipeline(Data, nEl);
+
+
+%% PLots of the L2-norm error
+
+L2_errors = [err0.L2_err , err1.L2_err , err2.L2_err , err3.L2_err , ...
+             err4.L2_err , err5.L2_err];
+
+H1_errors = [err0.H1_err , err1.H1_err , err2.H1_err , err3.H1_err , ...
+             err4.H1_err , err5.H1_err];
+
+stepsizes = [mesh0.h, mesh1.h, mesh2.h, mesh3.h,mesh4.h, mesh5.h];
+
+figure();
+
+loglog(stepsizes, L2_errors, '-+r');
+grid on;
+
+title('Graph of the L2 error $||u_{ex}-u_{num}||$, as a function of the stepszize $h$', Interpreter='latex');
+ylabel('$|| u_{ex} - u_{num}||_{L^2}$', Interpreter='latex')
+xlabel('$h$ [m]', Interpreter='latex')
+
+good_h = mesh4.h;

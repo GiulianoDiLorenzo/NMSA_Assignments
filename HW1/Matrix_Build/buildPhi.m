@@ -1,11 +1,11 @@
-function [Phi] = buildPhi(Region, plotMe)
+function [Phi] = buildPhi(Mesh, plotMe)
 
 %UNTITLED2 Summary of this function goes here
 %Detailed explanation goes here
-Phi = cell(Region.ne, 1);
+Phi = cell(Mesh.n_pts, 1);
 
-h = Region.h;
-x = Region.coord;
+h = Mesh.h;
+x = Mesh.coord;
 
 % Define the piecewise function
 
@@ -15,7 +15,7 @@ phi_1 = @(x) (x >= x(1) & x <= (x(1) + h)) .* ((x(1) + h - x) / h);
 %First column of Phi matrix
 Phi{1} = phi_1;
 
-for j = 2: Region.ne - 1
+for j = 2: Mesh.n_pts - 1
     
     % Storing points of interest
     x_prev = x(j-1);
@@ -43,7 +43,7 @@ Phi{end} = phi_end;
 if plotMe
     figure();
     L = {}; % Initialize an empty cell array
-    for i = 1  : Region.ne
+    for i = 1  : Mesh.n_pts
         phi_i = Phi{i};
     
         phi_i_val = phi_i(x);
