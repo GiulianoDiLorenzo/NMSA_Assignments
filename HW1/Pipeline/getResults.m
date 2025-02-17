@@ -1,4 +1,4 @@
-function [L2_err,sol,Mesh,Data] = getResults(Data, nEl)
+function [sol,Mesh,Data] = getResults(Data, nEl)
 
 fprintf('============================================================\n')
 fprintf(['Solving test ', Data.name, ' with ',num2str(nEl),' elements \n']);
@@ -33,7 +33,7 @@ M_star = Data.omega * M - A - R_star;
 
 % Excitation force vector
 fprintf('Building F...\n');
-F = Mesh.h * Data.force(Data.x)';
+F = Mesh.h * Data.force(Data.x);
 
 % Boundary conditions vector 
 [R_bc] = buildR_bc(Data,Mesh);
@@ -46,14 +46,10 @@ F = F + R_bc;
 fprintf('Computing numerical solution...\n\n');
 sol = (M_star)\F;
 
-% sol = real(sol);
+sol = real(sol);
 % sol = sol ./ ( max(sol)) );
 % sol = abs(sol).* exp(1i * angle(sol));
 
-%==========================================================================
-% ERROR COMPUTATION
-%==========================================================================
-error = Data.uex(Data.x).' - sol;
-L2_err = compute_L2_Error(error, Mesh.h);
+
 
 end
