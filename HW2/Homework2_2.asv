@@ -39,7 +39,7 @@ gamma = c/L;
 T = 5;
 
 % number of space steps
-NX = 1000;
+NX = 5;
 % space step / spatial mesh size
 dx = L/NX;
 
@@ -62,6 +62,7 @@ S_const = 1;
 S = (1+2*x).^2;
 Sx = 4 + 8*x;   % derivative in x of S
 
+%% Point 2, exact solution
 % exact solution for computing the error
 uex     = - cos(pi/2*x) * cos(3*pi*t);
 
@@ -114,6 +115,35 @@ xlabel('$x$ [m]');
 ylabel('$t$ [s]');
 zlabel('$|u_h(x,t) - u_{ex}(x,t)|$');
 colorbar
+
+% %% EXTRA - Plotting solution comparison with constant cross-section
+% figure()
+% for n = 1:NT
+%     plot(x, uex(:,n), "LineStyle", ":");
+%     hold on;
+%     plot(x, sol(:,n));
+%     legend('$u_{ex}$', '$u$');
+%     title("Solution comparison with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+%     xlabel('$x$ [m]');
+%     ylabel('$u(x,t), \quad u_{ex}(x,t)$');
+%     %ylim([-1,1]);
+%     grid on;
+%     pause(1e-5);
+%     hold off;
+% end
+% 
+% %% EXTRA - Plotting error with constant cross-section
+% figure()
+% for n = 1:NT
+%     plot(x, err(:,n));
+%     title("Error evaluation with constant cross-section S(x) = " + S_const + " m ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+%     xlabel('$x$ [m]');
+%     ylabel('$u(x,t) - u_{ex}(x,t)$');
+%     %ylim([-1,1]);
+%     grid on;
+%     pause(1e-5);
+%     hold off;
+% end
 
 %% Point 2, instability example (if you run this, take care of running the previous blocks again)
 NX = 800;
@@ -168,7 +198,7 @@ colorbar
 
 % approximation difference (in space and time)
 err_var = sol_var - uex;
-e_L2_var = sqrt(sum(sum(err_var.^2)) * dx * dt / (L * T));
+e_L2_var = sqrt(sum(sum(err.^2)) * dx * dt / (L * T));
 
 % plotting error (in abs) as surface
 figure()
@@ -181,12 +211,41 @@ ylabel('$t$ [s]');
 zlabel('$|u_h(x,t) - u_{ex}(x,t)|$');
 colorbar
 
+% %% EXTRA - Plotting solution comparison with variable cross-section
+% figure()
+% for n = 1:NT
+%     plot(x, uex(:,n), "LineStyle", ":");
+%     hold on;
+%     plot(x, sol_var(:,n));
+%     legend('$u_{ex}$', '$u$');
+%     title("Solution comparison with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+%     xlabel('$x$ [m]');
+%     ylabel('$u(x,t), \quad u_{ex}(x,t)$');
+%     %ylim([-1,1]);
+%     grid on;
+%     pause(1e-5);
+%     hold off;
+% end
+% 
+% %% EXTRA - Plotting error with variable cross-section
+% figure()
+% for n = 1:NT
+%     plot(x, err_var(:,n));
+%     title("Error evaluation with variable cross-section S(x) = $(1+2x)^2$ ($N_X$ = " + NX + ", $N_T$ = "+ NT + ") at t = "+ (n-1)*dt+ " s");
+%     xlabel('$x$ [m]');
+%     ylabel('$u(x,t) - u_{ex}(x,t)$');
+%     %ylim([-1,1]);
+%     grid on;
+%     pause(1e-5);
+%     hold off;
+% end
+
 %% Looping with different NX and NT
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NX and NT and evaluates the L2-error
 
-NX = [5, 10, 100, 200, 1000];
-NT = [5, 10, 15, 20, 25]*1e3;
+NX = [10, 100, 200, 1000];
+NT = 500*NX;
 
 e_L2 = zeros(length(NX));
 e_L2_var = zeros(length(NX));
@@ -227,7 +286,8 @@ end
 
 %% Looping with different NT, keeping NX
 % this block loops the computation for both constant and variable profile S(x)
-% takes different NT, keeps NX and evaluates the L2-error
+% takes a single NX = space_steps and computes NT = k*NX for each case
+% where k increases each time and is a refinement factor for the time domain
 
 space_steps = 100;       % (100)=1% of space domain
 NX = space_steps * ones(1, 20);
@@ -263,36 +323,30 @@ for i = 1:length(NX)
     
     sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
     e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
-  
+    
     sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
     e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
 
 end
 
-% printing norm errors in function of dt
+% printing norm errors in function of dt/T
 figure()
-plot(flip(T./NT)*1000, flip(e_L2)*100, '-o');
-title("L2-error as function of time step, $N_X$ = " + space_steps + " (" + L*100/space_steps + "\% L)");
-xlabel("$\Delta t$ [ms]");
-ylabel("$||u_h-u_{ex}||_{L^2}$ [\%]");
+% plot(flip(T./NT), flip(e_L2), '-o');
+plot(flip(1./NT)*100, flip(e_L2), '-o');
+title("Norm error as function of relative time step, $N_X$ = " + space_steps + " (" + L*100/space_steps + " \%)");
+% xlabel("$\Delta t$ [m]");
+xlabel("$\Delta t/T$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
-plot(flip(T./NT)*1000, flip(e_L2_var)*100, '-o');
+% plot(flip(T./NT), flip(e_L2_var), '-o');
+plot(flip(1./NT)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
-
-% slope evaluation
-slope_space = zeros(1, length(NX)-1);
-Dt = T./NT.';
-
-for i = 1:length(slope_space)
-    slope_space(i) = (e_L2(i+1) - e_L2(i))/(Dt(i+1) - Dt(i));
-end
-
-slope_space_avg = sum(slope_space)/length(slope_space);
 
 %% Looping with different NX, keeping NT
 % this block loops the computation for both constant and variable profile S(x)
-% takes different NX, keeps NT and evaluates the L2-error
+% takes a single NT = time_steps and computes NX = NT/k for each case
+% where k decreases each time and is a refinement factor for the space domain
 
 time_steps = 500;       % (500)=1% of space domain
 NT = time_steps * ones(1, 20);
@@ -334,23 +388,13 @@ for i = 1:length(NX)
 
 end
 
-% printing norm errors in function of dx
+% printing norm errors in function of dx/L
 figure()
-plot(flip(L./NX)*1000, flip(e_L2)*100, '-o');
-title("L2-error as function of spacestep, $N_T$ = " + time_steps + " (" + T*100/time_steps + "\% T)");
-xlabel("$\Delta x$ [mm]");
-ylabel("$||u_h-u_{ex}||_{L^2}$ [\%]");
+plot(flip(1./NX)*100, flip(e_L2), '-o');
+title("Norm error as function of relative time step, $N_T$ = " + time_steps + " (" + T*100/time_steps + " \%)");
+xlabel("$\Delta x/L$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
-plot(flip(L./NX)*1000, flip(e_L2_var)*100, '-o');
+plot(flip(1./NX)*100, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
-
-% slope evaluation
-slope_time = zeros(1, length(NX)-1);
-Dx = L./NX.';
-
-for i = 1:length(slope_time)
-    slope_time(i) = (e_L2(i+1) - e_L2(i))/(Dx(i+1) - Dx(i));
-end
-
-slope_time_avg = sum(slope_time)/length(slope_time);
