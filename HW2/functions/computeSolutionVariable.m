@@ -19,7 +19,7 @@ disp("Computing solution with variable profile, NX = " + NX + ", NT = " + NT);
 
 tic
 
-% initializing the solution;
+% initializing the solution
 sol = zeros(NX+1, NT+1);
 
 % applying the boundary conditions
