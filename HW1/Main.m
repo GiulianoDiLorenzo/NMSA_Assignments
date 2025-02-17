@@ -1,241 +1,134 @@
 clear; 
 close all;
 clc;
+
+
 %% Path
 
 addpath Pipeline
 addpath Matrix_Build
 addpath Results
 
-% % Define the path to the 'results' folder
-resultsFolder = fullfile('HW1', 'Results');
-% 
-% % Make sure the folder exists (if not, create it)
-% if ~exist(resultsFolder, 'dir')
-%     mkdir(resultsFolder);
-% end
-
-
 
 %% Question 2a 
+
 TestName = 'TestHW1_2a';
 omega = 1;
 
-% Define the list of nEl values
-nElList = [10+1, 30+1, 50+1, 100+1, 150+1];
+% Define the list of N_pts values
+N_pts_list = [10+1, 30+1, 50+1, 100+1, 150+1];
 
-% Initialize a structure to store results
-datas = struct();
-
-% Loop over each nEl value
-for i = 1:length(nElList)
-
-    % Generate data
-    [Data] = createData(TestName, nElList(i), omega);
-    
-    % Compute results
-    [sol, mesh, data] = getResults(Data, nElList(i));
-    % Compute error
-    error = Data.uex(Data.x).' - sol;
-    L2_err = compute_L2_Error(error, mesh.h);
-    
-    % Store results in the datas structure
-    datas(i).n_pts = nElList(i);  % Store nEl value
-    datas(i).err = L2_err;  % Store error
-    datas(i).sol = sol;  % Store solution
-    datas(i).mesh = mesh; % Store mesh structure
-    datas(i).data = data; % Store data structure
+% Question 2a - Numerical Run
+for i = 1 : length(N_pts_list)
+    [result] = runNumericalSolution(TestName, omega, N_pts_list(i), true);
+    results(i) = result;
 end
 
-%% Question 2a - Results plotting
-
-x_axis = datas(end).data.x;
-sol_ex = datas(end).data.uex(x_axis);
-
-markOpts = ["-x", "-x", "-x" , "-b" , "-c"];
-colorOpts = ["#7E2F8E" , "m" , "k" , "b" , "c"];
-lineWidths = [1 , 1 , 1 , 2.5 , 1.5];
-
-L = {};
-figure();
-
-plot( x_axis, sol_ex, "LineWidth",6, "Color",'r', LineStyle=':'); % Exact solution
-hold on;
-grid on
-L{end+1} =  'exact solution';
-
-for i = 1:length(datas)
-    x_axis = datas(i).data.x;
-    sol_num_i = datas(i).sol;
-    % disp([' i =', num2str(i), ' size(sol_num) = ', num2str(size(sol_num_i)) ]);
-
-    plot(x_axis , sol_num_i , markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
-
-    L{end+1} =  ['h =  ' , num2str(datas(i).mesh.h)];
-end
-
-title('Comparison of exact and numerical solutions for different mesh sizes.')
-legend(L);
-xlabel('x [m]');
-ylabel('amplitude');
-
+% Question 2a - Results plotting
+titleText = ['Comparison of exact and numerical solutions for different' ...
+             'mesh sizes'];
+plotNumericalSolution(results, titleText, 'N_pts');
 print('Q2a_mesh_size_comp.png', '-r300'); % 300 DPI resolution
 
-%% Question 2a - PLots of the L2-norm error
-L2_errors = zeros(length(data),1);
-h_vals = zeros(length(data),1);
-
-for i = 1:length(datas)
-    L2_errors(i) = datas(i).err;
-    h_vals(i) = datas(i).mesh.h;
-end
-
-h_vals_str = sprintf('%.3f, ', h_vals);  % Convert to string with 3 decimals
-h_vals_str = h_vals_str(1:end-2);           % Remove last comma and space
-titleText = sprintf('Graph of the L2 error ||u_{ex}-u_{num}||, as a function of the stepszize \n h = %s', h_vals_str);
-
-figure();
-
-semilogy(h_vals, L2_errors, '-+r', MarkerSize=8);
-grid on;
-
-title(titleText);
-ylabel('$log \left( || u_{ex} - u_{num}||_{L^2} \right)$', Interpreter='latex')
-xlabel('$h$ [m]', Interpreter='latex');
-
-
+% Question 2a L2 Error Computation and Plot
+[slope, L2_errors, h_vals] = computeAndPlotL2Error(results);
 print('Q2a_L2_error', '-dpng', '-r300'); % 300 DPI resolution
-
-slopes = zeros(length(datas) -1,1);
-for i = 2 :length(datas)
-    slopes(i-1) = ( log(L2_errors(1) - L2_errors(i)) ) / log((h_vals(1) - h_vals(i) ));
-end
-avg_slope = mean(slopes);
-% slope =  ( log(L2_errors(1) - L2_errors(5)) ) / log((h_vals(1) - h_vals(5) ))
-
 
 %% Question 2b - Computing routine
 TestName = 'TestHW1_2b';
-
 omega = 1;
-% Define the list of nEl values
-nElList = [2+1, 6+1, 12+1, 50+1, 100+1];
 
-% Initialize a structure to store results
-datas = struct();
+% Define the list of N_pts values
+N_pts_list = [10+1, 30+1, 50+1, 100+1, 150+1];
 
-% Loop over each nEl value
-for i = 1:length(nElList)
-
-    % Generate data
-    [Data] = createData(TestName, nElList(i), omega);
-    
-    % Compute results
-    [sol, mesh, data] = getResults(Data, nElList(i));
-    % Compute error
-    error = Data.uex(Data.x).' - sol;
-    L2_err = compute_L2_Error(error, mesh.h);
-    
-    % Store results in the datas structure
-    datas(i).n_pts = nElList(i);  % Store nEl value
-    datas(i).err = L2_err;  % Store error
-    datas(i).sol = sol;  % Store solution
-    datas(i).mesh = mesh; % Store mesh structure
-    datas(i).data = data; % Store data structure
+% Question 2b - Numerical Run
+for i = 1 : length(N_pts_list)
+    [result] = runNumericalSolution(TestName, omega, N_pts_list(i), true);
+    results(i) = result;
 end
 
-%% Question 2b - Results plotting
+% Question 2b - Results plotting
+titleText = {['Comparison of exact and numerical solutions for different ...' ...
+              'mesh sizes'], ...
+             ['\mu_1 = ', num2str(results(1).data.mu1), ...
+              ' \mu_2 = ', num2str(results(1).data.mu2), ...
+              ' \rho_1 = ', num2str(results(1).data.rho1), ...
+              ' \rho_2 = ', num2str(results(1).data.rho2)]};
 
-x_axis = datas(end).data.x;
-sol_ex = datas(end).data.uex(x_axis);
-
-markOpts = ["-x", "-x", "-x" , "-b" , "-c"];
-colorOpts = ["#7E2F8E" , "m" , "k" , "b" , "c"];
-lineWidths = [1 , 1 , 1 , 2.5 , 1.5];
-
-L = {};
-figure();
-
-plot( x_axis, sol_ex, "LineWidth",6, "Color",'r', LineStyle=':'); % Exact solution
-hold on;
-grid on
-L{end+1} =  'exact solution';
-
-for i = 1:length(datas)
-    x_axis = datas(i).data.x;
-    sol_num_i = datas(i).sol;
-
-    plot(x_axis , sol_num_i , markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
-
-    L{end+1} =  ['h =  ' , num2str(datas(i).mesh.h)];
-end
-
-title('Comparison of exact and numerical solutions for different mesh sizes.')
-legend(L);
-xlabel('x [m]');
-ylabel('amplitude');
-
+plotNumericalSolution(results, titleText, 'N_pts');
 print('Q2b_mesh_size_comp.png', '-r300'); % 300 DPI resolution
 
-
-%% Question 2b - PLots of the L2-norm error
-
-L2_errors = zeros(length(data),1);
-h_vals = zeros(length(data),1);
-
-for i = 1:length(datas)
-    L2_errors(i) = datas(i).err;
-    h_vals(i) = datas(i).mesh.h;
-end
-
-h_vals_str = sprintf('%.3f, ', h_vals);  % Convert to string with 3 decimals
-h_vals_str = h_vals_str(1:end-2);           % Remove last comma and space
-titleText = sprintf('Graph of the L2 error ||u_{ex}-u_{num}||, as a function of the stepszize \n h = %s', h_vals_str);
-
-figure();
-
-semilogy(h_vals, L2_errors, '-+r', MarkerSize=8);
-grid on;
-
-title(titleText);
-ylabel('$log \left( || u_{ex} - u_{num}||_{L^2} \right)$', Interpreter='latex')
-xlabel('$h$ [m]', Interpreter='latex');
-
-
+% Question 2b L2 Error Computation and Plot
+[slope, L2_errors, h_vals] = computeAndPlotL2Error(results);
 print('Q2b_L2_error', '-dpng', '-r300'); % 300 DPI resolution
 
-slopes = zeros(length(datas) -1,1);
-for i = 2 :length(datas)
-    slopes(i-1) = ( log(L2_errors(1) - L2_errors(i)) ) / log((h_vals(1) - h_vals(i) ));
-end
-
-avg_slope = mean(slopes);
-
 %% Question 3a
+TestName = 'TestHW1_3a';
 L = 5;
 f0 = 3;
 N_pts = 1 + 30 * f0 * L;
 
-omegaList = [0.1 , 1 , 2 , 5];
+% omegaList = [1 , 5];
+omegaList = 1 : 0.5 : 19.5;
 
-TestName = 'TestHW1_3a';
 
-% Initialize a structure to store results
-datas = struct();
-
+% Question 3a - Numerical Run
 for i = 1 : length(omegaList)
-    % Generate data
-    [Data] = createData(TestName, N_pts , omegaList(i));
-    % Compute results
-    [sol, mesh, data] = getResults(Data, N_pts);
-
-    % Store results in the datas structure
-    datas(i).n_pts = N_pts;  % Store N_pts value
-    datas(i).sol = sol;      % Store solution
-    datas(i).mesh = mesh;    % Store mesh structure
-    datas(i).data = data;    % Store data structure
+    [result] = runNumericalSolution(TestName, omegaList(i), N_pts, false);
+    resultsOmega(i) = result;
 end
 
+% Question 3a - Results plotting
+titleText = 'u(x) for sweeping \omega \in ]0,20[';
+plotNumericalSolution(resultsOmega, titleText, 'omega');
+print('Q2b_mesh_size_comp.png', '-r300'); % 300 DPI resolution
+
+peaks = zeros(length(omegaList) , 1);
+phase = zeros(length(omegaList) , 1);
+
+
+% Question 3a - Omega influence on magnitude and phase
+for i = 1 : length(omegaList)
+    peaks(i) = max( resultsOmega(i).sol);
+
+    [pks1,locs1] = findpeaks(resultsOmega(i).sol, NPeaks=1);
+    [pks2,locs2] = findpeaks( - resultsOmega(i).sol, NPeaks=1);
+    scatter(resultsOmega(i).data.x(locs1) , pks1, 'v', 'filled' , 'HandleVisibility', 'off')
+    scatter(resultsOmega(i).data.x(locs2) ,  - pks2, 'v', 'filled' , 'HandleVisibility', 'off')
+    hold on;
+   
+    dT_pks = mean(resultsOmega(i).data.x(locs1) - resultsOmega(i).data.x(locs2));
+    f = 1 / (2 * mean(resultsOmega(i).data.x(locs1) - resultsOmega(i).data.x(locs2))); % Frequency in Hz
+    omega = 2 * pi * f; % Angular frequency
+
+    % Compute phase shift
+    comp =  min(locs1, locs2) ;
+    phases = zeros(length(omegaList),1);
+    if comp == locs1
+        sgn = 0;
+        loc = locs1;
+    else
+        sgn = 1;
+        loc = locs2;
+    end
+    phases(i) =  sgn * pi/2 -  omega * resultsOmega(i).data.x(loc); % If first extremum is a peak
+end
+%%
+figure();
+subplot(2,1,1);
+plot(omegaList, peaks);
+xlabel('$\omega$', Interpreter='latex');
+ylabel('$max ( u_{num} ( \omega ) )$', Interpreter='latex');
+grid on
+
+subplot(2,1,2);
+plot(omegaList, phases);
+grid on;
+
+xlabel('$\omega$' , Interpreter='latex');
+ylabel('$\phi ( u_{num} ( \omega ) )$' , Interpreter='latex');
+
+print('Q3a_omega_influence.png', '-r300'); % 300 DPI resolution
 
 %% Question 3a - Plotting
 L = {};
@@ -244,8 +137,6 @@ figure();
 for i = 1:length(datas)
     x_axis = datas(i).data.x;
     sol_num_i = datas(i).sol;
-
-
     disp(size(sol_num_i));
 
     plot(x_axis , sol_num_i ); % , markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
@@ -308,7 +199,7 @@ ylabel('amplitude');
 T = 2;
 dt = 1e-3;
 N_inst = T / dt + 1;
-t = linspace(0,T, N_inst );
+t = linspace(0,T, N_inst);
 
 L = 5;
 f0 = 3;

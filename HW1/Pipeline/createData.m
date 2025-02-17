@@ -78,13 +78,17 @@ elseif strcmp(TestName,'TestHW1_2b')
     
     % Parameters and external forces, simple case with piece-wise constant terms rho,mu
     mu1 = 1;    % Value of mu in [0, L/2]
-    mu2 = 10;    % Value of mu in [L/2, L]
+    Data.mu1 = mu1;
+    mu2 = 1;    % Value of mu in [L/2, L]
+    Data.mu2 = mu2;
 
     % Define the function handle
     Data.mu = @(x) (x >= 0 & x <= L/2) .* mu1 + (x > L/2 & x <= L) .* mu2;
 
     rho1 = 1;    % Value of mu in [0, L/2]
     rho2 = 15;    % Value of mu in [L/2, L]
+    Data.rho1 = rho1;
+    Data.rho2 = rho2;
 
     % Define the function handle
     Data.rho = @(x) (x >= 0 & x <= L/2) .* rho1 + (x > L/2 & x <= L) .* rho2;

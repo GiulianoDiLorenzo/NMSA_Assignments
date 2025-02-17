@@ -42,6 +42,7 @@ Phi{end} = phi_end;
 
 if plotMe
     figure();
+    
     L = {}; % Initialize an empty cell array
     for i = 1  : Mesh.n_pts
         phi_i = Phi{i};
@@ -55,6 +56,7 @@ if plotMe
         L{end+1} = tag_i;
     end
     legend(L, 'Interpreter','latex');
+    title(['Linear basis function graph, for N_{pts} = ', num2str(Mesh.n_pts)])
 end
 
 end
