@@ -229,20 +229,20 @@ end
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NT, keeps NX and evaluates the L2-error
 
-space_steps = 100;       % (100)=1% of space domain
-NX = space_steps * ones(1, 20);
-NT = NX .* round(linspace(5, 25, 20));
+NX = 100;       % (100)=1% of space domain
+NT = NX * round(linspace(5, 25, 20));
 
-e_L2 = zeros(1, length(NX));
-e_L2_var = zeros(1, length(NX));
+dx = L/NX;
+x = linspace(0, L, NX).';
 
-for i = 1:length(NX)
+e_L2 = zeros(1, length(NT));
+e_L2_var = zeros(1, length(NT));
 
-    dx = L/NX(i);
+for i = 1:length(NT)
+
     dt = T/NT(i);
     lambda = gamma*dt/dx;
     
-    x = linspace(0, L, NX(i)).';
     t = linspace(0, T, NT(i));
     
     S = (1+2*x).^2;
@@ -261,10 +261,10 @@ for i = 1:length(NX)
     f  = S_const * (utt - gamma^2 * uxx);
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
-    sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
+    sol = computeSolutionConstant(NX, NT(i), dt, u_0, u_1, lambda, f);
     e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
   
-    sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
+    sol_var = computeSolutionVariable(NX, NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
     e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
 
 end
@@ -272,7 +272,7 @@ end
 % printing norm errors in function of dt
 figure()
 plot(flip(T./NT)*1000, flip(e_L2)*100, '-o');
-title("L2-error as function of time step, $N_X$ = " + space_steps + " (" + L*100/space_steps + "\% L)");
+title("L2-error as function of time step, $N_X$ = " + NX + " (" + L*100/NX + "\% L)");
 xlabel("$\Delta t$ [ms]");
 ylabel("$||u_h-u_{ex}||_{L^2}$ [\%]");
 grid on
@@ -281,22 +281,24 @@ plot(flip(T./NT)*1000, flip(e_L2_var)*100, '-o');
 legend("Constant profile", "Variable profile");
 
 % slope evaluation
-slope_space = zeros(1, length(NX)-1);
+slope_time = zeros(1, length(NT)-1);
 Dt = T./NT.';
 
-for i = 1:length(slope_space)
-    slope_space(i) = (e_L2(i+1) - e_L2(i))/(Dt(i+1) - Dt(i));
+for i = 1:length(slope_time)
+    slope_time(i) = (e_L2(i+1) - e_L2(i))/(Dt(i+1) - Dt(i));
 end
 
-slope_space_avg = sum(slope_space)/length(slope_space);
+slope_time_avg = sum(slope_time)/length(slope_time);
 
 %% Looping with different NX, keeping NT
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NX, keeps NT and evaluates the L2-error
 
-time_steps = 500;       % (500)=1% of space domain
-NT = time_steps * ones(1, 20);
-NX = round(NT .* (linspace(1, 20, 20)/100));
+NT = 10000;       % (500)=1% of space domain
+NX = round(NT * (linspace(1, 20, 20)/100));
+
+dt = T/NT;
+t = linspace(0, T, NT);
 
 e_L2 = zeros(1, length(NX));
 e_L2_var = zeros(1, length(NX));
@@ -304,11 +306,9 @@ e_L2_var = zeros(1, length(NX));
 for i = 1:length(NX)
 
     dx = L/NX(i);
-    dt = T/NT(i);
     lambda = gamma*dt/dx;
     
     x = linspace(0, L, NX(i)).';
-    t = linspace(0, T, NT(i));
     
     S = (1+2*x).^2;
     Sx = 4 + 8*x;
@@ -326,10 +326,10 @@ for i = 1:length(NX)
     f  = S_const * (utt - gamma^2 * uxx);
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
-    sol = computeSolutionConstant(NX(i), NT(i), dt, u_0, u_1, lambda, f);
+    sol = computeSolutionConstant(NX(i), NT, dt, u_0, u_1, lambda, f);
     e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
     
-    sol_var = computeSolutionVariable(NX(i), NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
+    sol_var = computeSolutionVariable(NX(i), NT, dx, dt, S, u_0, u_1, lambda, f_var);
     e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
 
 end
@@ -337,7 +337,7 @@ end
 % printing norm errors in function of dx
 figure()
 plot(flip(L./NX)*1000, flip(e_L2)*100, '-o');
-title("L2-error as function of spacestep, $N_T$ = " + time_steps + " (" + T*100/time_steps + "\% T)");
+title("L2-error as function of spacestep, $N_T$ = " + NT + " (" + T*100/NT + "\% T)");
 xlabel("$\Delta x$ [mm]");
 ylabel("$||u_h-u_{ex}||_{L^2}$ [\%]");
 grid on
@@ -346,11 +346,11 @@ plot(flip(L./NX)*1000, flip(e_L2_var)*100, '-o');
 legend("Constant profile", "Variable profile");
 
 % slope evaluation
-slope_time = zeros(1, length(NX)-1);
-Dx = L./NX.';
+slope_space = zeros(1, length(NX)-1);
+Dx = L./NX;
 
-for i = 1:length(slope_time)
-    slope_time(i) = (e_L2(i+1) - e_L2(i))/(Dx(i+1) - Dx(i));
+for i = 1:length(slope_space)
+    slope_space(i) = (e_L2(i+1) - e_L2(i))/(Dx(i+1) - Dx(i));
 end
 
-slope_time_avg = sum(slope_time)/length(slope_time);
+slope_space_avg = sum(slope_space)/length(slope_space);

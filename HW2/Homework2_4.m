@@ -39,7 +39,7 @@ gamma = c/L;
 T = 5;
 
 % number of space steps
-NX = 800;
+NX = 1000;
 % space step / spatial mesh size
 dx = L/NX;
 
