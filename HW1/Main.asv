@@ -193,7 +193,7 @@ disp('================================================');
 figure();
 for i = 1:length(omegaList)
     
-    dataSlice = real(v(:,:,i));      % Extract the i-th slice of v
+    dataSlice = real(v(:,:,i0% Extract the i-th slice of v
 
     [xAx , tAx] = meshgrid(results4(i).data.x , t);
     

@@ -1,4 +1,4 @@
-function [sol,Mesh,Data] = getResults(Data, nEl)
+function [sol,Mesh,Data] = systemAssembly(Data, nEl)
 
 fprintf('============================================================\n')
 fprintf(['Solving test ', Data.name, ' with ',num2str(nEl),' elements \n']);

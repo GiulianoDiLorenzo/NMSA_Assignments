@@ -1,8 +1,8 @@
-function plotNumericalSolution(datas, titleText, sweepType)
+function plotNumericalSolution(datas, titleText, saveName , sweepType, isExSol)
 L = {};
 figure();
 
-if strcmp(sweepType , 'N_pts')
+if ( strcmp(sweepType , 'N_pts') && (isExSol) )
     x_axis = datas(end).data.x;
     sol_ex = datas(end).data.uex(x_axis);
     plot( x_axis, sol_ex, "LineWidth",4, "Color",'r', LineStyle=':'); % Exact solution
@@ -37,4 +37,6 @@ title(titleText);
 legend(L);
 xlabel('x [m]');
 ylabel('amplitude');
+
+print(saveName,'-dpng', '-r300');
 end

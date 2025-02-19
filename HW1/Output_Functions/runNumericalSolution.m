@@ -4,7 +4,7 @@ function [result] = runNumericalSolution(TestName, omega, N_pts, computeError)
     [Data] = createData(TestName, N_pts, omega);
     
     % Compute results
-    [sol, mesh, data] = getResults(Data, N_pts);
+    [sol, mesh, data] = systemAssembly(Data, N_pts);
 
     % Compute error
     if computeError
