@@ -39,7 +39,7 @@ TestName = 'TestHW1_2b';
 omega = 1;
 
 % Define the list of N_pts values
-N_pts_list = [10+1, 30+1, 50+1, 100+1, 150+1];
+N_pts_list = [50+1, 100+1, 500+1, 1000+1, 1500+1, 3000 + 1];
 
 % Question 2b - Numerical Run
 for i = 1 : length(N_pts_list)
@@ -48,7 +48,7 @@ for i = 1 : length(N_pts_list)
 end
 
 % Question 2b - Results plotting
-titleText = {['Comparison of exact and numerical solutions for different ...' ...
+titleText = {['Comparison of exact and numerical solutions for different' ...
               'mesh sizes'], ...
              ['\mu_1 = ', num2str(results(1).data.mu1), ...
               ' \mu_2 = ', num2str(results(1).data.mu2), ...

@@ -5,14 +5,14 @@ figure();
 if strcmp(sweepType , 'N_pts')
     x_axis = datas(end).data.x;
     sol_ex = datas(end).data.uex(x_axis);
-    plot( x_axis, sol_ex, "LineWidth",6, "Color",'r', LineStyle=':'); % Exact solution
+    plot( x_axis, sol_ex, "LineWidth",4, "Color",'r', LineStyle=':'); % Exact solution
     L{end+1} =  'exact solution';
 end
 
 if strcmp(sweepType , 'N_pts')
-   markOpts = ["-x", "-x", "-x" , "-b" , "-c"];
-   colorOpts = ["#7E2F8E" , "m" , "k" , "b" , "c"];
-   lineWidths = [1 , 1 , 1 , 2.5 , 1.5];
+   % markOpts = ["-x", "-x", "-x" , "-b" , "-c"];
+   % colorOpts = ["#7E2F8E" , "m" , "k" , "b" , "c"];
+   % lineWidths = [1 , 1 , 1 , 2.5 , 1.5];
 end
 
 hold on; grid on
@@ -24,7 +24,7 @@ for i = 1:length(datas)
 
     
     if strcmp(sweepType , 'N_pts')
-        plot(x_axis , sol_num_i , markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
+        plot(x_axis , sol_num_i ); % markOpts(i), 'Color', colorOpts(i), 'LineWidth', lineWidths(i));
         L{end+1} =  ['h =  ' , num2str(datas(i).mesh.h)];
     elseif strcmp(sweepType , 'omega')
         plot(x_axis , sol_num_i);

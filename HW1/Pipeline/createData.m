@@ -19,7 +19,7 @@ if strcmp(TestName,'TestHW1_2a')
     Data.uex_xx = @(x) -(2*pi)^2*uex(x);
     
     % Parameters and external forces, simple case with constant terms rho,mu
-    Data.mu = @(x) 2.*ones(size(x));
+    Data.mu = @(x) 5.*ones(size(x));
     Data.rho = @(x) 1.*ones(size(x));
     Data.omega = omega;
 
@@ -71,25 +71,30 @@ elseif strcmp(TestName,'TestHW1_2b')
     Data.L = L;
     Data.boundary = 'DR';
 
+    [Data.uex , Data.uex_x, Data.uex_xx] = setExactSolution(Data);
+
     % Exact solution for error analysis
-    Data.uex = @(x)  (x >= 0 & x <= L/2) .*  sin(2*pi*x) + (x > L/2 & x <= L) .*  sin(4*pi*x);
-    Data.uex_x = @(x) (x >= 0 & x <= L/2) .*  2*pi .* cos(2*pi*x) + (x > L/2 & x <= L) .*  4*pi .* cos(4*pi*x);
-    Data.uex_xx = @(x) (x >= 0 & x <= L/2) .*  (-(2*pi)^2) .* sin(2*pi*x) + (x > L/2 & x <= L) .* (-(4*pi)^2) .* sin(4*pi*x);
+    % Data.uex = @(x)  (x >= 0 & x <= L/2) .*  sin(2*pi*x) + (x > L/2 & x <= L) .*  sin(4*pi*x);
+    % Data.uex_x = @(x) (x >= 0 & x <= L/2) .*  2*pi .* cos(2*pi*x) + (x > L/2 & x <= L) .*  4*pi .* cos(4*pi*x);
+    % Data.uex_xx = @(x) (x >= 0 & x <= L/2) .*  (-(2*pi)^2) .* sin(2*pi*x) + (x > L/2 & x <= L) .* (-(4*pi)^2) .* sin(4*pi*x);
+
+    % Data.uex = @(x) sin(2*pi*x);
+    % Data.uex_x = @(x) 2*pi*cos(2*pi*x);
+    % Data.uex_xx = @(x) -(2*pi)^2*uex(x);
     
+
     % Parameters and external forces, simple case with piece-wise constant terms rho,mu
     mu1 = 1;    % Value of mu in [0, L/2]
+    mu2 = 10;    % Value of mu in [L/2, L]
     Data.mu1 = mu1;
-    mu2 = 1;    % Value of mu in [L/2, L]
     Data.mu2 = mu2;
-
     % Define the function handle
     Data.mu = @(x) (x >= 0 & x <= L/2) .* mu1 + (x > L/2 & x <= L) .* mu2;
 
     rho1 = 1;    % Value of mu in [0, L/2]
-    rho2 = 15;    % Value of mu in [L/2, L]
+    rho2 = 150;    % Value of mu in [L/2, L]
     Data.rho1 = rho1;
     Data.rho2 = rho2;
-
     % Define the function handle
     Data.rho = @(x) (x >= 0 & x <= L/2) .* rho1 + (x > L/2 & x <= L) .* rho2;
 
@@ -114,13 +119,9 @@ elseif strcmp(TestName,'TestHW1_2b')
     
     Data.force = @(x) Data.rho(x).* Data.omega .* Data.uex(x) + Data.d_mu_u_ex_x;
 
-    %  % Non constant profiles
-    % Data.force = @(x) Data.rho(x) .* Data.omega .* Data.uex(x) + Data.d_mu_u_ex
-    % Data.d_mu_u_ex()x
-    % (Data.rho(x)*Data.omega - Data.mu(x)*(2*pi)^2) .* Data.uex;
 
     % Dirichlet condition on the left part of the domain
-    Data.gD = 0 ;
+    Data.gD = Data.uex(0) ;
 
     % Robin on the right part of the domain
     Data.gR = Data.uex(L) - 1i * Data.uex_x(L) ./ (Data.rho(L) .* Data.omega); 

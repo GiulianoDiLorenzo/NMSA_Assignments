@@ -22,7 +22,7 @@ xlabel('$h$ [m]', Interpreter='latex');
 
 slopes = zeros(length(datas) -1,1);
 for i = 2 :length(datas)
-    slopes(i-1) = ( log(L2_errors(1) - L2_errors(i)) ) / log((h_vals(1) - h_vals(i) ));
+    slopes(i-1) = ( log(L2_errors(1) -  L2_errors(i)) ) / log((h_vals(1) - h_vals(i) ));
 end
 slope = mean(slopes);
 
