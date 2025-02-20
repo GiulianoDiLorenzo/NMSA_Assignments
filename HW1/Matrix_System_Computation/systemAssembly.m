@@ -1,6 +1,6 @@
 function [sol,Mesh,Data] = systemAssembly(Data, nEl)
 
-fprintf('============================================================\n')
+fprintf('\n============================================================\n')
 fprintf(['Solving test ', Data.name, ' with ',num2str(nEl),' elements \n']);
 
 %==========================================================================
@@ -32,7 +32,7 @@ fprintf('Building M* = ( w * M - A - R* ) ...\n');
 M_star = Data.omega * M - A - R_star;
 
 % Excitation force vector
-fprintf('Building righ hand side...\n');
+fprintf('Building F* = F + R_bc ...\n');
 F = Mesh.h * Data.force(Data.x);
 
 % Boundary conditions vector 
@@ -43,10 +43,9 @@ F = F + R_bc;
 %==========================================================================
 % Invert system for solution and extract u;
 %==========================================================================
-fprintf('Computing numerical solution...\n');
+fprintf('Computing numerical solution U = inv(M*) * F* \n');
 sol = (M_star)\F;
 
 sol = real(sol);
-
 
 end
