@@ -1,17 +1,12 @@
 function [uex , uex_x, uex_xx] = setExactSolution(Data)
     % Define options
-    options = {'Sin( 2 * pi * x)', 'Piece-wise Sin( 2 * pi * x) -- Sin( 4 * pi * x)', 'f(x)=1', 'COS(2*pi*x)'};
+    options = {'2 sinus of frequency 2*pi , 8*pi' , '2 sinus of frequency 2*pi , 4*pi', 'simple sine' };
     
-
-    uex = @(x) sin(2*pi*x);
-    uex_x = @(x) 2*pi*cos(2*pi*x);
-    uex_xx = @(x) -(2*pi)^2*uex(x);
-
     % Create selection dialog
     [selection, ok] = listdlg('PromptString', 'Select an option:', ...
                               'SelectionMode', 'single', ...
                               'ListString', options);
-    
+   
     % Check if user made a selection
     if ok
         selectedOption = options{selection};
@@ -20,23 +15,33 @@ function [uex , uex_x, uex_xx] = setExactSolution(Data)
         % Set variables based on selection
         switch selection
             case 1
-                uex = @(x) sin(2*pi*x);
-                uex_x = @(x) 2*pi*cos(2*pi*x);
-                uex_xx = @(x) -(2*pi)^2*uex(x);
+                L = Data.L
+                uex = @(x)  (x >= 0  & x <= L/2) .*  sin(2*pi*x) ...
+                          + (x >= L/2 & x <= L)   .*  sin(8*pi*x);
+
+                uex_x = @(x) (x >= 0  & x <= L/2) .*  2*pi .* cos(2*pi*x) ...
+                           + (x > L/2 & x <= L)   .*  8*pi .* cos(8*pi*x);
+
+                uex_xx = @(x) (x >= 0  & x <= L/2) .* (-(2*pi)^2) .* sin(2*pi*x) ...
+                            + (x > L/2 & x <= L)   .* (-(8*pi)^2)  .* sin(8*pi*x);
+        
             case 2
                 L = Data.L
-                uex = @(x)  (x >= 0 & x <= L/2) .*  sin(2*pi*x) + (x > L/2 & x <= L) .*  sin(4*pi*x);
-                uex_x = @(x) (x >= 0 & x <= L/2) .*  2*pi .* cos(2*pi*x) + (x > L/2 & x <= L) .*  4*pi .* cos(4*pi*x);
-                uex_xx = @(x) (x >= 0 & x <= L/2) .*  (-(2*pi)^2) .* sin(2*pi*x) + (x > L/2 & x <= L) .* (-(4*pi)^2) .* sin(4*pi*x);
+                uex = @(x)  (x >= 0  & x <= L/2) .*  sin(2*pi*x) ...
+                          + (x > L/2 & x <= L)   .*  sin(4*pi*x);
 
+                uex_x = @(x) (x >= 0  & x <= L/2) .*  2*pi .* cos(2*pi*x) ...
+                           + (x > L/2 & x <= L)   .*  4*pi .* cos(4*pi*x);
+
+                uex_xx = @(x) (x >= 0  & x <= L/2) .* (-(2*pi)^2) .* sin(2*pi*x) ...
+                            + (x > L/2 & x <= L)   .* (-(4*pi)^2)  .* sin(4*pi*x);
             case 3
-                uex = @(x) ones(size(x));
-                uex_x = @(x) 0 .* uex(x);
-                uex_xx = @(x) 0 .* uex(x);
-            case 4
-                uex = @(x) cos(2*pi*x);
-                uex_x = @(x) -2*pi .* sin(2*pi*x);
-                uex_xx = @(x) -(2*pi)^2 .* uex;
+                L = Data.L
+                uex = @(x)  (x >= 0  & x <= L) .*  sin(2*pi*x);
+
+                uex_x = @(x) (x >= 0  & x <= L) .*  2*pi .* cos(2*pi*x); 
+
+                uex_xx = @(x) (x >= 0  & x <= L) .* (-(2*pi)^2) .* sin(2*pi*x) ;
         end
         
     else

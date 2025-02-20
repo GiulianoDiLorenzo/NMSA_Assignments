@@ -1,14 +1,14 @@
-function [result] = runNumericalSolution(TestName, omega, N_pts, computeError)
+function [result] = runNumericalSolution(TestName, omega, N_pts, computeError, mu_vals, rho_vals)
     result = struct();
     % Generate data
-    [Data] = createData(TestName, N_pts, omega);
+    [Data] = createData(TestName, N_pts, omega, mu_vals, rho_vals);
     
     % Compute results
     [sol, mesh, data] = systemAssembly(Data, N_pts);
 
     % Compute error
     if computeError
-        error = Data.uex(Data.x).' - sol;
+        error = Data.uex(Data.x) - sol;
         L2_err = compute_L2_Error(error, mesh.h);
         result.err = L2_err;  % Store error
     end
