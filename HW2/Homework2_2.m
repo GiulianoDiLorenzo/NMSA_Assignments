@@ -271,10 +271,10 @@ end
 
 % printing norm errors in function of dt
 figure()
-plot(flip(T./NT)*1000, flip(e_L2)*100, '-o');
+plot(flip(T./NT)*1000, flip(e_L2), '-o');
 title("L2-error as function of time step, $N_X$ = " + NX + " (" + L*100/NX + "\% L)");
 xlabel("$\Delta t$ [ms]");
-ylabel("$||u_h-u_{ex}||_{L^2}$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
 plot(flip(T./NT)*1000, flip(e_L2_var)*100, '-o');
@@ -294,8 +294,9 @@ slope_time_avg = sum(slope_time)/length(slope_time);
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NX, keeps NT and evaluates the L2-error
 
-NT = 10000;       % (500)=1% of space domain
-NX = round(NT * (linspace(1, 20, 20)/100));
+NT = 500;       % (500)=1% of time domain
+%NX = round(NT * (linspace(1, 20, 20)/100));
+NX = round(linspace(NT/(10*T), NT/T, 20));
 
 dt = T/NT;
 t = linspace(0, T, NT);
@@ -336,13 +337,13 @@ end
 
 % printing norm errors in function of dx
 figure()
-plot(flip(L./NX)*1000, flip(e_L2)*100, '-o');
+plot(flip(L./NX)*1000, flip(e_L2), '-o');
 title("L2-error as function of spacestep, $N_T$ = " + NT + " (" + T*100/NT + "\% T)");
 xlabel("$\Delta x$ [mm]");
-ylabel("$||u_h-u_{ex}||_{L^2}$ [\%]");
+ylabel("$||u_h-u_{ex}||_{L^2}$");
 grid on
 hold on
-plot(flip(L./NX)*1000, flip(e_L2_var)*100, '-o');
+plot(flip(L./NX)*1000, flip(e_L2_var), '-o');
 legend("Constant profile", "Variable profile");
 
 % slope evaluation
