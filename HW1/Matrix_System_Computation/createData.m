@@ -1,4 +1,17 @@
-function [Data] = createData(TestName, numEl, omega, mu_vals, rho_vals )
+function [Data] = createData(TestName, N_pts, omega, mu_vals, rho_vals )
+% ========================================================================
+%   OUTPUT : Structure of the Galerkin formulation with problem's functions
+%            discretization
+
+%   INPUTS : 
+%       - TestName  --> Identification for questions of HW1
+%       - N_pts     --> Number of nodes in the mesh
+%       - omega     --> Scalar value for omega parameter
+%       - mu_vals   --> array of (1,2) for the mu values on each half of
+%                       the domain
+%       - rho_vals  --> array of (1,2) for the rho values on each half of
+%                       the domain
+% ========================================================================
 
 if strcmp(TestName,'TestHW1_2a')
     L = 1; % Domain end
@@ -23,7 +36,7 @@ if strcmp(TestName,'TestHW1_2a')
     Data.mu = @(x) mu_vals(1).*ones(size(x));
     Data.rho = @(x) rho_vals(1).*ones(size(x));
     
-    x = linspace(0,L, numEl);
+    x = linspace(0,L, N_pts);
     Data.x = x.';
 
     % Compute mu(x) values
@@ -85,7 +98,7 @@ elseif strcmp(TestName,'TestHW1_2b')
                   + (x > L/2 & x <= L)   .* rho2;
 
 
-    x = linspace(0,L, numEl).';
+    x = linspace(0,L, N_pts).';
     Data.x = x;
 
     % Compute mu(x) values
@@ -126,7 +139,7 @@ elseif strcmp(TestName,'TestHW1_3a')
     Data.L = L;
     Data.boundary = 'DR';
 
-    x = linspace(0,L, numEl).';
+    x = linspace(0,L, N_pts).';
     Data.x = x;
 
     Data.omega = omega;
@@ -176,7 +189,7 @@ elseif strcmp(TestName,'TestHW1_3b')
     Data.L = L;
     Data.boundary = 'DR';
 
-    x = linspace(0,L, numEl).';
+    x = linspace(0,L, N_pts).';
     Data.x = x;
 
     Data.omega = omega;

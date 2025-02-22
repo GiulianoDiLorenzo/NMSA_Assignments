@@ -1,5 +1,11 @@
 function [R_star] = buildR_star(Data,Mesh)
+% ========================================================================
+%   OUTPUT : Extra residual Matrix of size (num_pts,num_pts)
 
+%   INPUTS : 
+%       - Data --> Structure of the Galerkin formulation of the pb
+%       - Mesh --> Structure of the Mesh representation 
+% ========================================================================
 
 num_pts = Mesh.n_pts;
 

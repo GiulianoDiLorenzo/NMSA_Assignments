@@ -1,13 +1,17 @@
 function [Phi] = buildPhi(Mesh, plotMe)
+% ========================================================================
+%   OUTPUT : Structure with handler for the N_pts basis functions
 
-%UNTITLED2 Summary of this function goes here
-%Detailed explanation goes here
+%   INPUTS : 
+%       - Mesh   --> Structure of the Mesh representation 
+%       - plotMe --> Boolean for plotting (==True)
+% ========================================================================
+
 Phi = cell(Mesh.n_pts, 1);
 
 h = Mesh.h;
 x = Mesh.coord;
 
-% Define the piecewise function
 
 % First basis function, only in [x_1, x_2]
 phi_1 = @(x) (x >= x(1) & x <= (x(1) + h)) .* ((x(1) + h - x) / h);
@@ -26,7 +30,7 @@ for j = 2: Mesh.n_pts - 1
     phi_j = @(x) (x >= x_prev & x < x_now)  .* (x - x_prev) / h  + ...
                  (x >= x_now & x <= x_next) .* (x_next - x) / h;
 
-     Phi{j} = phi_j;
+    Phi{j} = phi_j;
     
      % % Some prints for checks
      % fprintf('x_prev = %f \n', x_prev);

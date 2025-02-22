@@ -1,4 +1,11 @@
 function [R_bc] = buildR_bc(Data,Mesh)
+% ========================================================================
+%   OUTPUT : Boundary Conditions "Force" vector Array of size (num_pts,1)
+
+%   INPUTS : 
+%       - Data --> Structure of the Galerkin formulation of the pb
+%       - Mesh --> Structure of the Mesh representation 
+% ========================================================================
 
 
 num_pts = Mesh.n_pts;

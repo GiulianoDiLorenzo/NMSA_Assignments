@@ -1,4 +1,11 @@
 function [uex , uex_x, uex_xx] = setExactSolution(Data)
+% ========================================================================
+%   OUTPUT : Expression of u_ex(t) and its derivatives for exact solution
+%            comparison
+%   INPUTS : 
+%       - Data      --> Structure of the Galerkin formulation with problem's 
+% ========================================================================
+
     % Define options
     options = {'2 sinus of frequency 2*pi , 8*pi' , '2 sinus of frequency 2*pi , 4*pi', 'simple sine' };
     

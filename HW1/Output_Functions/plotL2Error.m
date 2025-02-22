@@ -1,11 +1,22 @@
-function [lin_coeff, L2_errors, h_vals] = plotL2Error(datas, saveName)
+function [lin_coeff, L2_errors, h_vals] = plotL2Error(results, saveName)
+% ========================================================================
+%   OUTPUT : 
+%       - lin_coeff --> Coefficient of the slope
+%       - L2_errors --> Array containing the L2 error of each run
+%       - h_vals    --> Array containing the mesh size for each run
+%
+%   INPUTS : 
+%       - results   --> Structure with all data : problem formulation and 
+%                       solution
+%       - saveName  --> String for saving the graph
+% ========================================================================
 
-    L2_errors = zeros(length(datas),1);
-    h_vals = zeros(length(datas),1);
+    L2_errors = zeros(length(results),1);
+    h_vals = zeros(length(results),1);
 
-    for i = 1:length(datas)
-        L2_errors(i) = datas(i).err;
-        h_vals(i) = datas(i).mesh.h;
+    for i = 1:length(results)
+        L2_errors(i) = results(i).err;
+        h_vals(i) = results(i).mesh.h;
     end
     
     h_vals_str = sprintf('%.3f, ', h_vals);  % Convert to string with 3 decimals
@@ -17,7 +28,7 @@ function [lin_coeff, L2_errors, h_vals] = plotL2Error(datas, saveName)
     figure();
     % semilogy(h_vals, L2_errors, '-+r', MarkerSize=8);
     hold on ;
-    semilogy(h_vals, L2_errors, '-ob', MarkerSize=8);
+    semilogy((h_vals), (L2_errors), '-ob', MarkerSize=8);
 
     
     grid on;
@@ -25,11 +36,11 @@ function [lin_coeff, L2_errors, h_vals] = plotL2Error(datas, saveName)
     ylabel('$|| u_{ex} - u_{num}||_{L^2}$', Interpreter='latex')
     xlabel('$h$ [m]', Interpreter='latex');
     
-    slopes = zeros(length(datas) -1,1);
-    slopes2 = zeros(length(datas) -1,1);
+    slopes = zeros(length(results) -1,1);
+    slopes2 = zeros(length(results) -1,1);
     slopesEx = ( L2_errors(1:end-1) - L2_errors(2:end))  ./ ( h_vals(1:end-1) - h_vals(2:end));
 
-    for i = 2 :length(datas)
+    for i = 2 :length(results)
          slopes(i-1) = ( log10(L2_errors(1)) - log10(L2_errors(i)) ) / ( log10(h_vals(1)) - log10(h_vals(i)) ) ;
          slopes3(i-1) = ( log10(L2_errors(1)) - log10(L2_errors(i)) ) / ( h_vals(1) - h_vals(i)) ;
          slopes2(i-1) = ( L2_errors(1) - L2_errors(i) )  / ( h_vals(1) - h_vals(i) ) ;

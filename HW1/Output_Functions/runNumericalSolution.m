@@ -1,5 +1,20 @@
-function [result] = runNumericalSolution(TestName, omega, N_pts, computeError, mu_vals, rho_vals)
+function [result] = runNumericalSolution(TestName, omega, N_pts, compute_Err, mu_vals, rho_vals)
+% ========================================================================
+%   OUTPUT : Structure with all data : problem formulation and solution
+
+%   INPUTS : 
+%       - TestName  --> Identification for questions of HW1
+%       - N_pts     --> Number of nodes in the mesh
+%       - omega     --> Scalar value for omega parameter
+%       - compute_Err   --> Boolean for L2 error computation (==True)
+%       - mu_vals   --> array of (1,2) for the mu values on each half of
+%                       the domain
+%       - rho_vals  --> array of (1,2) for the rho values on each half of
+%                       the domain
+% ========================================================================
+    
     result = struct();
+    
     % Generate data
     [Data] = createData(TestName, N_pts, omega, mu_vals, rho_vals);
     
@@ -7,13 +22,12 @@ function [result] = runNumericalSolution(TestName, omega, N_pts, computeError, m
     [sol, mesh, data] = systemAssembly(Data, N_pts);
 
     % Compute error
-    if computeError
+    if compute_Err
         error = Data.uex(Data.x) - sol;
         L2_err = compute_L2_Error(error, mesh.h);
         result.err = L2_err;  % Store error
     end
    
-    
     % Store results in the datas structure
     result.n_pts = N_pts;  % Store nEl value
     result.sol = sol;  % Store solution

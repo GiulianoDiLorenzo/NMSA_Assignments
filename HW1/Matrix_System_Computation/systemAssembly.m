@@ -1,13 +1,24 @@
-function [sol,Mesh,Data] = systemAssembly(Data, nEl)
+function [sol,Mesh,Data] = systemAssembly(Data, N_pts)
+% ========================================================================
+%   OUTPUT : 
+%       - sol    --> Numerical approximation of the solution u_num of size
+%                    (N_pts, 1)
+%       - Mesh  -->  Structure of the Mesh of the system 
+%       - Data   --> Structure of the Galerkin formulation with problem's
+% 
+%   INPUTS : 
+%       - Data   --> Structure of the Galerkin formulation with problem's 
+%       - N_pts  --> Number of nodes in the domain
+% ========================================================================
 
 fprintf('\n============================================================\n')
-fprintf(['Solving test ', Data.name, ' with ',num2str(nEl),' elements \n']);
+fprintf(['Solving test ', Data.name, ' with ',num2str(N_pts),' elements \n']);
 
 %==========================================================================
 % MESH GENERATION
 %==========================================================================
 
-[Mesh] = CreateMesh(Data,nEl);
+[Mesh] = CreateMesh(Data,N_pts);
 
 %==========================================================================
 % BUILD FINITE ELEMENT MATRICES and RIGHT-HAND SIDE
@@ -41,7 +52,7 @@ F = Mesh.h * Data.force(Data.x);
 F = F + R_bc;
 
 %==========================================================================
-% Invert system for solution and extract u;
+% Inverting the system for the numerical solution 
 %==========================================================================
 fprintf('Computing numerical solution U = inv(M*) * F* \n');
 sol = (M_star)\F;

@@ -1,6 +1,11 @@
 function [L2_err] = compute_L2_Error(error, h)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+% ========================================================================
+%   OUTPUT : L2 Error of discretization 
+%
+%   INPUTS : 
+%       - error --> Value of the error for a given numerical run
+%       - h     --> Mesh size of the system
+% ========================================================================
 L2_err = 0;
 
 for i = 1:length(error)-1
