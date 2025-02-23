@@ -13,7 +13,7 @@ addpath Output_Functions
 TestName = 'TestHW1_2a';
 omega = 1;
 
-N_pts_list = [10+1, 100+1, 150 + 1 , 200 + 1, 500+1]; % Define the list of N_pts values
+N_pts_list = [50+1, 100+1, 150 + 1 , 200 + 1, 500+1]; % Define the list of N_pts values
 
 %% Question 2a - Numerical Run
 mu_vals =  [1 , 1];
@@ -73,7 +73,7 @@ fprintf('\n================================================\n');
 
 %% Question 2b - Numerical Solution Results Plots for mu sweep
 
-titleText = ['Studying influence of \mu with N_{pts} = ' , num2str(N_pts) , ' and \mu_1 = ' , num2str(results2b_mu(1).data.mu1)];
+titleText = ['Studying influence of $\mu$ with $N_{pts}$ = ' , num2str(N_pts) , ' and mu_1 = ' , num2str(results2b_mu(1).data.mu1)];
 
 saveName = 'Plots/Q2b_mu_comp';
 
@@ -118,10 +118,13 @@ L = 5;
 f0 = 3;
 
 N_pts = 1 + 30 * f0 * L; % Number of points to respect 10 points per wavelength condition
-omegaList = 1 : 0.1 : 19.5;
+
+omegaList = 1 : 0.1 : 19.5; % PUT PLOTME = TRUE FOR computePeakPhase
+% omegaList =  [1 , 2 , 3 , 4 , 5, 10 , 12 , 15 , 20];    % PUT PLOTME = FALSE FOR computePeakPhase
 
 mu_vals =  [1 , 1];
 rho_vals = [1 , 1];
+
 
 
 %% Question 3a - Numerical Run
@@ -140,35 +143,14 @@ titleText = ['$u_{num}(x)$ with $N_{pts} = $', num2str(N_pts), ' for sweeping $\
 
 saveName = 'Plots/Q3a_u(x)_omega_comp';
 
-plotNumericalSolution(results3a, titleText, saveName , 'omega', false);
+plotNumericalSolution(results3a, titleText, saveName , 'omega', true);
 
 
-%% Question 3a - Computing peaks and phases for each omega
-[peaks, phases] = computePeakPhase(omegaList, results3a); 
+%% Question 3a - Computing peaks and phases for each omega with plots
 
+saveName = 'Plots/Q3b_omega_influence_dB';
+[peaks, locs, phases] = computePeakPhase(omegaList, results3a, saveName , true); 
 
-%% Question 3a - Plotting gains and phases as functions of omega
-figure();
-sgtitle('Influence of \omega on magnitude and phase, constant velocity');
-
-subplot(2,1,1);
-plot(omegaList, db(abs(peaks)),  LineWidth=2);
-xlabel('$\omega$', Interpreter='latex');
-ylabel('$max | u_{num} ( \omega ) | [dB]$', Interpreter='latex');
-title('Magnitude');
-grid on
-
-subplot(2,1,2);
-plot(omegaList, phases, LineWidth=2);
-hold on;
-yline(pi/2, LineStyle="--");
-grid on;
-
-xlabel('$\omega$' , Interpreter='latex');
-ylabel('$\angle u_{num} ( \omega )$ [rad]' , Interpreter='latex');
-title('Phase');
-
-print('Plots/Q3a_omega_influence_dB', '-dpng',  '-r300');
 
 %% Question 3b - Set up
 TestName = 'TestHW1_3b';
@@ -177,7 +159,9 @@ L = 5;
 f0 = 3;
 
 N_pts = 1 + 300 * f0 * L;           % Number of points to respect the 10 points per wavelength condition
-omegaList = 1 : 0.1 : 19.5;
+
+omegaList = 1 : 0.1 : 19.5; % PUT PLOTME = TRUE FOR computePeakPhase
+% omegaList =  [1 , 2 , 3 , 4 , 5, 10 , 12 , 15 , 20];    % PUT PLOTME = FALSE FOR computePeakPhase
 
 mu_vals =  [1 , 1];
 rho_vals = [1 , 1];
@@ -203,7 +187,10 @@ saveName = 'Plots/Q3b_u(x)_omega_comp';
 plotNumericalSolution(results3b, titleText, saveName , 'omega', false);
 
 %% Question 3b - Computing peaks and phases for each omega
-[peaks, phases] = computePeakPhase(omegaList, results3b); 
+
+saveName = 'Plots/Q3b_omega_influence_dB';
+[peaks, locs, phases] = computePeakPhase(omegaList, results3b, saveName , true); 
+
 
 %% Question 3b - Plotting gains and phases as functions of omega
 figure();
@@ -214,6 +201,7 @@ plot(omegaList, db(abs(peaks)),  LineWidth=2);
 xlabel('$\omega$', Interpreter='latex');
 ylabel('$max | u_{num} ( \omega ) | [dB]$', Interpreter='latex');
 title('Magnitude');
+xline(omegaList(locs))
 grid on
 
 subplot(2,1,2);

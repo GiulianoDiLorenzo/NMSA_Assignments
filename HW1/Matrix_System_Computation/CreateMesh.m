@@ -17,7 +17,7 @@ function [Mesh] = CreateMesh(Data,N_pts)
 x0 = Data.domain(1);
 xL = Data.domain(2);
 
-p = linspace(x0,xL,n_pts);         % points of the mesh
+p = linspace(x0,xL,N_pts);         % points of the mesh
  MeshSize = (xL-x0)./(N_pts-1);     % mesh size of the domain
 %================================================
 

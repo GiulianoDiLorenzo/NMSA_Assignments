@@ -1,4 +1,4 @@
-function [peaks, phases] = computePeakPhase(omegaList, results)
+function [peaks, locs, phases] = computePeakPhase(omegaList, results, saveName, plotMe)
 % ========================================================================
 %   OUTPUT : 
 %       - peaks      --> Maximum amplitude of the solution, array of size
@@ -14,43 +14,46 @@ function [peaks, phases] = computePeakPhase(omegaList, results)
 
     peaks = zeros(length(omegaList), 1);
     phases = zeros(length(omegaList), 1);
+    locs = zeros(length(omegaList), 1);
 
     for i = 1 : length(omegaList)
-        peaks(i) = max( (results(i).sol));
+        peaks(i) = max( (results(i).sol) );
         phases(i) = asin(results(i).sol(1) / peaks(i) );
     end
 
+    [~, locs] = findpeaks(db(abs(peaks)));
+
+
+if plotMe
+
+    figure();
+    sgtitle('Influence of \omega on magnitude and phase, constant velocity');
+    
+    subplot(2,1,1);
+    
+    plot(omegaList, db(abs(peaks)),  LineWidth=2);
+    hold on;
+    xline(omegaList(locs), 'r--', 'LineWidth', 2); 
+    
+    xlabel('$\omega$', Interpreter='latex');
+    ylabel('$max | u_{num} ( \omega ) | [dB]$', Interpreter='latex');
+    title('Magnitude');
+    grid on
+    
+    subplot(2,1,2);
+    
+    plot(omegaList, phases, LineWidth=2);
+    hold on;
+    xline(omegaList(locs), 'r--', 'LineWidth', 2)
+    
+    grid on;
+    
+    xlabel('$\omega$' , Interpreter='latex');
+    ylabel('$\angle u_{num} ( \omega )$ [rad]' , Interpreter='latex');
+    title('Phase');
+    
+    print(saveName, '-dpng',  '-r300');
 end
 
-% 
-% peaks = zeros(length(omegaList), 1);
-% phases = zeros(length(omegaList), 1);
-% 
-% 
-% for i = 1 : length(omegaList)
-%     peaks(i) = max( results(i).sol);
-% 
-%     [pks1,locs1] = findpeaks(results(i).sol, NPeaks=1);
-%     [pks2,locs2] = findpeaks( - results(i).sol, NPeaks=1);
-%     scatter(results(i).data.x(locs1) , pks1, 'v', 'filled' , 'HandleVisibility', 'off')
-%     scatter(results(i).data.x(locs2) ,  - pks2, 'v', 'filled' , 'HandleVisibility', 'off')
-%     hold on;
-% 
-%     dT_pks = mean(results(i).data.x(locs1) - results(i).data.x(locs2));
-%     f = 1 / (2 * mean(results(i).data.x(locs1) - results(i).data.x(locs2))); % Frequency in Hz
-%     omega = 2 * pi * f; % Angular frequency
-% 
-%     % Compute phase shift
-%     comp =  min(locs1, locs2) ;
-%     phases = zeros(length(omegaList),1);
-%     if comp == locs1
-%         sgn = 0;
-%         loc = locs1;
-%     else
-%         sgn = 1;
-%         loc = locs2;
-%     end
-%     phases(i) =  sgn * pi/2 -  omega * results(i).data.x(loc); % If first extremum is a peak
-% end
-% 
-% 
+
+end

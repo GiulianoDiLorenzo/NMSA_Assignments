@@ -60,7 +60,8 @@ if plotMe
         L{end+1} = tag_i;
     end
     legend(L, 'Interpreter','latex');
-    title(['Linear basis function graph, for N_{pts} = ', num2str(Mesh.n_pts)])
+    title(['Linear basis function graph, for N_{pts} = ', num2str(Mesh.n_pts)]);
+    print('Plots/Basis_functions', '-dpng',  '-r300');
 end
 
 end
