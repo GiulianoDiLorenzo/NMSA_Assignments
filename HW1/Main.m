@@ -143,12 +143,12 @@ titleText = ['$u_{num}(x)$ with $N_{pts} = $', num2str(N_pts), ' for sweeping $\
 
 saveName = 'Plots/Q3a_u(x)_omega_comp';
 
-plotNumericalSolution(results3a, titleText, saveName , 'omega', true);
+plotNumericalSolution(results3a, titleText, saveName , 'omega', false);
 
 
 %% Question 3a - Computing peaks and phases for each omega with plots
 
-saveName = 'Plots/Q3b_omega_influence_dB';
+saveName = 'Plots/Q3a_omega_influence_dB';
 [peaks, locs, phases] = computePeakPhase(omegaList, results3a, saveName , true); 
 
 
