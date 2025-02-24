@@ -263,10 +263,12 @@ for i = 1:length(NT)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX, NT(i), dt, u_0, u_1, lambda, f);
-    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
+    % e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt);
   
     sol_var = computeSolutionVariable(NX, NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
+    % e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt);
 
 end
 
@@ -288,6 +290,12 @@ slope_time_avg = sum(slope_time)/length(slope_time);
 % slope evaluation (variable profile)
 slope_time_var = (e_L2_var(2:end) - e_L2_var(1:end-1))./(Dt(2:end) - Dt(1:end-1));
 slope_time_var_avg = sum(slope_time_var)/length(slope_time_var);
+
+% scheme convergence
+p_time = log(e_L2(1:end-1)./e_L2(2:end)) ./ log(Dt(1:end-1)./Dt(2:end));
+p_time_var = log(e_L2_var(1:end-1)./e_L2_var(2:end)) ./ log(Dt(1:end-1)./Dt(2:end));
+p_time_avg = sum(p_time)/length(p_time);
+p_time_var_avg = sum(p_time_var)/length(p_time_var);
 
 %% Looping with different NX, keeping NT
 % this block loops the computation for both constant and variable profile S(x)
@@ -328,10 +336,12 @@ for i = 1:length(NX)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX(i), NT, dt, u_0, u_1, lambda, f);
-    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
+    % e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt / (L * T));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt);
     
     sol_var = computeSolutionVariable(NX(i), NT, dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
+    % e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt / (L * T));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt);
 
 end
 
@@ -353,3 +363,9 @@ slope_space_avg = sum(slope_space)/length(slope_space);
 % slope evaluation (variable profile)
 slope_space_var = (e_L2_var(2:end) - e_L2_var(1:end-1))./(Dx(2:end) - Dx(1:end-1));
 slope_space_var_avg = sum(slope_space_var)/length(slope_space_var);
+
+% scheme convergence
+p_space = log(e_L2(1:end-1)./e_L2(2:end)) ./ log(Dx(1:end-1)./Dx(2:end));
+p_space_var = log(e_L2_var(1:end-1)./e_L2_var(2:end)) ./ log(Dx(1:end-1)./Dx(2:end));
+p_space_avg = sum(p_space)/length(p_space);
+p_space_var_avg = sum(p_space_var)/length(p_space_var);
