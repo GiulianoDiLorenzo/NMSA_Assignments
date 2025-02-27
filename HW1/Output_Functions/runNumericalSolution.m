@@ -1,4 +1,4 @@
-function [result] = runNumericalSolution(TestName, omega, N_pts, compute_Err, mu_vals, rho_vals)
+function [result] = runNumericalSolution(TestName, L, omega, N_pts, compute_Err, mu_vals, rho_vals)
 % ========================================================================
 %   OUTPUT : Structure with all data : problem formulation and solution
 
@@ -14,23 +14,53 @@ function [result] = runNumericalSolution(TestName, omega, N_pts, compute_Err, mu
 % ========================================================================
     
     result = struct();
-    
-    % Generate data
-    [Data] = createData(TestName, N_pts, omega, mu_vals, rho_vals);
-    
-    % Compute results
-    [sol, mesh, data] = systemAssembly(Data, N_pts);
 
-    % Compute error
-    if compute_Err
-        error = Data.uex(Data.x) - sol;
-        L2_err = compute_L2_Error(error, mesh.h);
-        result.err = L2_err;  % Store error
-    end
+    %==========================================================================
+    % GENERATE DATA
+    %==========================================================================
+    % [Data] = createData(TestName, N_pts, omega, mu_vals, rho_vals);
+    [Data] = createData(TestName, L, N_pts, omega, mu_vals, rho_vals);
    
-    % Store results in the datas structure
+    %==========================================================================
+    % MESH GENERATION
+    %==========================================================================
+    [Mesh] = createMesh(Data,N_pts);
+
+    %==========================================================================
+    % BUILD BASIS FUNCTIONS
+    %==========================================================================
+    plotPhi = false;
+    [Phi] = buildPhi(Mesh, plotPhi);
+    
+    %==========================================================================
+    % BUILD MATRICES AND SOLVE SYSTEM
+    %==========================================================================
+    [M_star,F] = systemAssembly(Data, Mesh, Phi, N_pts);
+
+    %==========================================================================
+    % INVERTING THE SYSTEM TO GET THE SOLUTION
+    %==========================================================================
+    fprintf('Computing numerical solution U = inv(M*) * F* \n');
+    sol = M_star\F;
+
+    sol = real(sol); %Extracting only the real part of the solution
+    
+
+    %==========================================================================
+    % STORE RELEVANT DATA IN THE OUTPUT STRUCTURE
+    %==========================================================================
     result.n_pts = N_pts;  % Store nEl value
     result.sol = sol;  % Store solution
-    result.mesh = mesh; % Store mesh structure
-    result.data = data; % Store data structure
+    result.mesh = Mesh; % Store mesh structure
+    result.data = Data; % Store data structure
+
+    %==========================================================================
+    % COMPUTE ERROR IF NEEDED
+    %==========================================================================
+    if compute_Err
+        error = Data.uex(Data.x) - sol;
+        L2_err = compute_L2_Error(error, Mesh.h);
+        result.err = L2_err;  % Store error
+    end 
+
 end

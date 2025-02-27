@@ -1,4 +1,4 @@
-function [Mesh] = CreateMesh(Data,N_pts)
+function [Mesh] = createMesh(Data,N_pts)
 % ========================================================================
 %   OUTPUT : Structure of the Mesh of the system 
 

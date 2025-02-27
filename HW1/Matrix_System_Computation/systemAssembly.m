@@ -1,35 +1,26 @@
-function [sol,Mesh,Data] = systemAssembly(Data, N_pts)
+function [M_star, F] = systemAssembly(Data, Mesh, Phi, N_pts)
 % ========================================================================
 %   OUTPUT : 
-%       - sol    --> Numerical approximation of the solution u_num of size
-%                    (N_pts, 1)
-%       - Mesh  -->  Structure of the Mesh of the system 
-%       - Data   --> Structure of the Galerkin formulation with problem's
+%       - M_star --> Matrix of the left hand side of the system,
+%                    size (N_pts, N_pts)
+%       - F      --> Vector of the right hand side of the matrix system, 
+%                    size (N_pts,1))   
 % 
 %   INPUTS : 
-%       - Data   --> Structure of the Galerkin formulation with problem's 
+%       - Data   --> Structure of the Galerkin formulation with problem's
+%       - Mesh   --> Structure of the Mesh of the system 
+%       - Phi    --> Structure with handlers for the N_pts basis functions
 %       - N_pts  --> Number of nodes in the domain
 % ========================================================================
 
 fprintf('\n============================================================\n')
 fprintf(['Solving test ', Data.name, ' with ',num2str(N_pts),' elements \n']);
 
-%==========================================================================
-% MESH GENERATION
-%==========================================================================
 
-[Mesh] = CreateMesh(Data,N_pts);
-
-%==========================================================================
-% BUILD FINITE ELEMENT MATRICES and RIGHT-HAND SIDE
-%==========================================================================
-
-plotPhi = false;
-[Phi] = buildPhi(Mesh, plotPhi);
-
-% % Mass matrix assembly;
+% Mass matrix assembly;
 fprintf('Building M ...\n');
 [M] = buildM(Data, Mesh, Phi);
+
 
 % Stiffness matrix assembly;
 fprintf('Building A ...\n');
@@ -51,12 +42,12 @@ F = Mesh.h * Data.force(Data.x);
 
 F = F + R_bc;
 
-%==========================================================================
-% Inverting the system for the numerical solution 
-%==========================================================================
-fprintf('Computing numerical solution U = inv(M*) * F* \n');
-sol = (M_star)\F;
-
-sol = real(sol);
+% %==========================================================================
+% % Inverting the system for the numerical solution 
+% %==========================================================================
+% fprintf('Computing numerical solution U = inv(M*) * F* \n');
+% sol = (M_star)\F;
+% 
+% sol = real(sol);
 
 end

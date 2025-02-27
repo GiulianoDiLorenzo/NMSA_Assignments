@@ -53,7 +53,7 @@ for i = 1:length(results)
 end
 
 
-title(titleText, Interpreter="latex");
+title(titleText, Interpreter="tex");
 legend(L);
 xlabel('x [m]');
 ylabel('amplitude');

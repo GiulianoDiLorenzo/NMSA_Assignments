@@ -1,4 +1,4 @@
-function [A] = buildA(Data,Mesh)
+function [A] = buildA_OLD(Data,Mesh)
 % ========================================================================
 %   OUTPUT : Stiffness matrix of dimension (num_pts , num_pts)
 
@@ -20,12 +20,6 @@ A = zeros( num_pts , num_pts );
 A(1,1) =  ( 2*mu(x(1)) + mu(x(2)) ) / (2*h);
 A(num_pts,num_pts) = ( 2*mu(x(end-1)) + mu(x(end)) ) / (2*h);
 
-mu_1_prev = Data.mu1;
-mu_1_now =  Data.mu1;
-mu_2_now =  Data.mu1;
-mu_2_next = Data.mu1;
-
-
 %Computing the superior triangular zone of A
 for i = 2:num_pts-1  
 
@@ -33,17 +27,6 @@ for i = 2:num_pts-1
     x_prev = x(i-1);
     x_now  = x(i);
     x_next = x(i+1);
-
-    if (i == round(num_pts -1)/2)
-        mu_2_now = Data.mu2;
-        mu_2_next = Data.mu2;
-    end
-
-    if (i > round(num_pts -1)/2)
-        mu_1_prev = Data.mu2;
-        mu_1_now = Data.mu2;
-    end
-    
 
 
     % ===================================================================
@@ -57,7 +40,7 @@ for i = 2:num_pts-1
     % ====================== ELEMENTS A(i,i) ===========================
     % ===================================================================
     % Computing m_{i,i} using Trapezoidal rule
-      A(i,i) = ( mu_1_prev +  mu_1_now + mu_2_now +  mu_2_next ) / (2*h); 
+    A(i,i) = (mu(x_prev) + 2*mu(x_now) + mu(x_next) ) / (2*h) ;
 
     % ===================================================================
     % ====================== ELEMENTS A(i,i+1) ==========================
