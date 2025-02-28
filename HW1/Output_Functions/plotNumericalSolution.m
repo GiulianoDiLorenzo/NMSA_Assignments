@@ -17,13 +17,13 @@ figure();
 if ( isExSol )
     x_axis = results(end).data.x;
     sol_ex = results(end).data.uex(x_axis);
-    plot( x_axis, sol_ex, "LineWidth",3, "Color",'r', LineStyle='-.'); % Exact solution
+    plot( x_axis, sol_ex, "LineWidth",3.5, "Color",'r', LineStyle='-'); % Exact solution
     L{end+1} =  'exact solution';
 end
 
 if strcmp(sweepType , 'N_pts')
    markOpts = ["-o", "-o", "-x" , "-" , "--" ];
-   colorOpts = [ "k" , "#7E2F8E" , "m" , "c" , "b" ];
+   colorOpts = [ "k" , "#7E2F8E" , "g" , "c" , "b" ];
    lineWidths = [1 , 1 , 1 , 1 , 1.5 ];
 end
 
@@ -44,16 +44,16 @@ for i = 1:length(results)
 
     elseif strcmp(sweepType , 'mu')
         L{end+1} = ['\mu_2 = ' , num2str(results(i).data.mu2)];
-        plot(x_axis , sol_num_i, 'LineWidth', 2, 'LineStyle','-.');
+        plot(x_axis , sol_num_i, 'LineWidth', 2);
 
     elseif strcmp(sweepType , 'rho')
         L{end+1} = ['\rho_2 = ' , num2str(results(i).data.rho2)];
-        plot(x_axis , sol_num_i);
+        plot(x_axis , sol_num_i, 'LineWidth', 2);
     end
 end
 
 
-title(titleText, Interpreter="tex");
+title(titleText, Interpreter="latex");
 legend(L);
 xlabel('x [m]');
 ylabel('amplitude');
