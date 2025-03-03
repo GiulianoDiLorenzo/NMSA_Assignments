@@ -102,7 +102,6 @@ colorbar
 
 % approximation difference (in space and time)
 err = sol - uex;
-e_L2 = sqrt(sum(sum(err.^2)) * dx * dt / (L * T));
 
 % plotting error (in abs) as surface
 figure()
