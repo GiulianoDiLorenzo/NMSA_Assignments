@@ -68,7 +68,10 @@ if strcmp(TestName,'TestHW1_2a')
 
 elseif strcmp(TestName,'TestHW1_2b')
     
-    [Data.uex , Data.uex_x, Data.uex_xx] = setExactSolution(Data);
+    % [Data.uex , Data.uex_x, Data.uex_xx] = setExactSolution(Data);
+    Data.uex = @(x)     sin(2*pi*x);
+    Data.uex_x = @(x)   2*pi .* cos(2*pi*x);
+    Data.uex_xx = @(x)  - (2*pi)^2 .* Data.uex(x);
 
     % Function handler for mu
     Data.mu = @(x) (x >= 0  & x < L/2) .* mu1 ...
@@ -118,7 +121,7 @@ elseif strcmp(TestName,'TestHW1_3a')
     Data.mu2 = rho1;
 
     % We're interested only in alpha(end), i.e. at x=L
-    Data.alpha = Data.mu(L) .* Data.rho(L) * Data.omega ;
+    Data.alpha = Data.mu(L) .* Data.rho(L) ;
 
     % Force vector
     Data.force = @(x) zeros(size(x));
@@ -134,14 +137,14 @@ elseif strcmp(TestName,'TestHW1_3b')
     f0 = 3;
     Data.f0 = 3;
 
-    Data.c = @(x) (x >= 0  & x <= L/2) .* 0.1 ...
+    Data.c = @(x) (x >= 0  & x < L/2) .* 0.1 ...
                 + (x >= L/2 & x <= L)   .* 2;
 
     Data.rho = @(x) rho1 * ones(size(x));
 
-    Data.mu = @(x)  (Data.c(x)).^2 .*Data.rho(x);
+    Data.mu = @(x) Data.rho(x) .* (Data.c(x)).^2;
 
-    mu_vals = unique(Data.mu(x));
+    mu_vals = unique(Data.mu(x), 'stable');
 
     Data.mu1 = mu_vals(1);
     Data.mu2 = mu_vals(2);

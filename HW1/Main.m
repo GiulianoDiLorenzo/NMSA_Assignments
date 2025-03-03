@@ -75,7 +75,7 @@ fprintf('\n================================================\n');
 % ====== NUMERICAL SOLUTION PLOTS =======
 % =======================================
 
-titleText = ['Studying influence of \mu with N_{pts} = ' , num2str(N_pts) , ' and \mu_1 = ' , num2str( results2b_mu(1).data.mu1 )];
+titleText = ['Studying influence of $\mu$ with $N_{pts} = $' , num2str(N_pts) , ' and $\mu_1 = $' , num2str( results2b_mu(1).data.mu1 )];
 
 saveName = 'Plots/Q2b_mu_comp';
 
@@ -116,7 +116,7 @@ fprintf('\n================================================\n');
 % ====== NUMERICAL SOLUTION PLOTS =======
 % =======================================
 
-titleText = ['Studying influence of \rho, with N_{pts} = ' , num2str(N_pts) , ' and \rho_1 = ' , num2str(results2b_rho(1).data.rho1)];
+titleText = ['Studying influence of $\rho$, with $N_{pts} = $' , num2str(N_pts) , ' and $\rho_1 = $' , num2str(results2b_rho(1).data.rho1)];
 
 saveName = 'Plots/Q2b_rho_comp';
 plotNumericalSolution(results2b_rho, titleText, saveName , 'rho', true);
@@ -201,7 +201,7 @@ fprintf('\n================================================\n');
 
 titleText = ['Numerical solution $u_{num}(x)$ with $N_{pts}$ = ', num2str(N_pts), ' and $\omega \in ]0,20[$'];
 
-saveName = 'Plots/Q3b_u(x)_omega_comp';
+saveName = 'Plots/Q3b_u(x)_omega_comp_4_values';
 
 plotNumericalSolution(results3b, titleText, saveName , 'omega', false);
 
@@ -209,12 +209,12 @@ plotNumericalSolution(results3b, titleText, saveName , 'omega', false);
 
 %% Question 3b - Computing peaks and phases for each omega
 
-saveName = 'Plots/Q3b_omega_influence_dB';
+saveName = ['Plots/Q3b_omega_influence_dB'];
 [peaks, locs, phases] = computePeakPhase(omegaList, results3b, saveName , true); 
 
 
 %% Question 4 - Set Up
-TestName = 'TestHW1_2a';
+TestName = 'TestHW1_3b';
 
 L = 5;
 f0 = 3;
@@ -225,50 +225,35 @@ N_pts = 1 + 300 * f0 * L;
 mu_vals =  [1 , 1];
 rho_vals = [1 , 1];
 
-T = 2*pi/omegaList(1);
 dt = 1e-3;
-N_inst = round(T / dt) + 1;
-t = linspace(0,T, N_inst);
 
-%% Question 4 - Generating v(x,t) = u(x) * exp(i * w * t)
-
-v = zeros(N_pts , N_inst, length(omegaList));
-
-
-for i = 1 : length(omegaList)
-    [result4] = runNumericalSolution(TestName, L, omegaList(i), N_pts, false, mu_vals, rho_vals);
-    results4(i) = result4;
-
-    v(:,:,i) = exp(1i*omegaList(i)*t) .* results4(i).sol;
-end
-
-disp('================================================');
-disp('===================== DONE =====================');
-disp('================================================'); 
-
-%% Question 4 - Surface plots
+%% Question 4 - Computing and Plotting results
 
 figure();
-for i = 1:length(omegaList)
-    
-    dataSlice = real(v(:,:,i));      % Extract the i-th slice of v
+for i = 1 : length(omegaList)
+    T = 2*pi/omegaList(i);
+    N_inst = round(T / dt) + 1;
+    t = linspace(0,T, N_inst);
 
-    [xAx , tAx] = meshgrid(results4(i).data.x , t);
+    v = zeros(N_pts , N_inst, length(omegaList));
+
+    [result_i] = runNumericalSolution(TestName, L, omegaList(i), N_pts, false, mu_vals, rho_vals);
+    v(:,:,i) = exp(1i*omegaList(i)*t) .* result_i.sol;
+
+    [x_axis , t_axis] = meshgrid(result_i.data.x , t);
+
+    subplot(round(length(omegaList)/2), floor(length(omegaList)/2),i);
+    surf(x_axis , t_axis , real(v(:,:,i))');
     
-    % Create surface plot
-    subplot(ceil(length(omegaList)/2), 2,i);
-    surf(xAx , tAx , dataSlice');
-    
-    % Formatting
-    title(['Surface Plot for \omega = ', num2str(omegaList(i))]);
-    xlabel('x-axis [m]');
-    ylabel('t-axis [s]');
-    zlabel('Values');
-    colorbar; % Add color bar for reference
-    shading interp; % Smooth shading
+    title(['$\omega = $', num2str(omegaList(i)), ', T = ', num2str(T), ' s'], 'Interpreter','latex');
+    xlabel('x-axis [m]', Interpreter='latex');
+    ylabel('t-axis [s]', Interpreter='latex');
+    zlabel('v(x,t)', Interpreter='latex');
+    colorbar; 
+    shading interp; 
     view(3); % Set 3D view
     axis tight;
 end
+sgtitle('$v(x,t)$ for different values of $\omega$', 'Interpreter', 'latex');
 
-print('Plots/Q4_v(x,t)', '-dpng' , '-r300');
 
