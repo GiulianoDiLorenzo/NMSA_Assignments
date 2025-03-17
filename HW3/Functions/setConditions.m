@@ -23,7 +23,7 @@ cond = struct();
     
     elseif strcmp(scenario, 'Green light')
         % ============= GREEN LIGHT =============
-        cond.rho_L = 0.7* rho_max;
+        cond.rho_L = 0.9* rho_max;
         cond.rho_R = 0.2* rho_max;
         % rho_x_0 = (x <= L/2) .* rho_L + (x > L/2) .* rho_R;
     

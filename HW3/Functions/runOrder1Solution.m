@@ -7,6 +7,8 @@ function [Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh)
     Rho(:,1) = rho_x_0;
     
     f   =  @(rho) u_max * (rho - rho.^2/rho_max); 
+    rho = linspace(0,rho_max,100);
+    plot(rho)
     df  =  @(rho) u_max * (1 - 2*rho/rho_max);
     ddf =  - 2 * u_max/rho_max;
     
