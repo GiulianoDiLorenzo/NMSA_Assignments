@@ -1,4 +1,4 @@
-function [cond] = setConditions(scenario, rho_max, L, x)
+function [rho_L, rho_R, rho_x_0] = setConditions(scenario, rho_max, L, x)
 % ========================================================================
 %   OUTPUT : 
 %       - rho_L     -->  value of rho on the left part of the domain
@@ -14,7 +14,6 @@ function [cond] = setConditions(scenario, rho_max, L, x)
 %       - x         --> array of size (Nx,1) spatial mesh
 % ========================================================================
 
-cond = struct();
     if strcmp(scenario, 'Traffic jam')
         % ============= TRAFFIC JAM =============
         cond.rho_L = 0.2* rho_max;
@@ -39,7 +38,7 @@ cond = struct();
     
     end
 
-    cond.rho_x_0 = (x <= L/2) .* cond.rho_L + (x > L/2) .* cond.rho_R;
+    cond.rho_x_0 = (x <= L/2) .* rho_L + (x > L/2) .* rho_R;
 
 end
 

@@ -26,10 +26,10 @@ set(groot, 'DefaultTextInterpreter', 'latex', ...           % interpreter Latex 
 %% Parameters
 
 L = 1;                      % Length of the road
-T = 1;                      % Total simulation time
+T = 0.2;                      % Total simulation time
 
-Nx = 2000;                   % Number of spatial points
-Nt = 200;                    % Number of time steps
+Nx = 100;                   % Number of spatial points
+Nt = 00;                    % Number of time steps
 
 Mesh = createMesh(L, T, Nx, Nt);
 
@@ -38,10 +38,12 @@ u_max = 1;                  % Maximum speed   (normalized)
 
 
 if u_max * Mesh.dt / Mesh.dx > 1
-    error('CFL condition violated!');
+    error('CFL condition violated! Reduce dt or increase Nx.');
 else 
     disp('CFL Condition respected')
 end
+
+
 
 
 
@@ -50,60 +52,39 @@ end
 % ========== NUMERICAL RESOLUTION ==========
 % ==========================================
 scenario = 'Traffic jam';
-[cond] = setConditions(scenario, rho_max, Mesh.L, Mesh.x);
+[rho_L, rho_R, rho_x_0] = setConditions(scenario, rho_max, Mesh.L, Mesh.x);
 
-[Rho_1_jam,~] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh);
-[Rho_2_jam,~] = runOrder2Solution(scenario, cond, rho_max, u_max, Mesh);
+[Rho,t_c] = runSolution(scenario, rho_x_0, rho_max, u_max, Mesh);
 
 %% First order scheme - Traffic Jam
 % ==========================================
 % ================ 2D PLOT =================
 % ==========================================
-draw2DSolution(scenario, Rho_2_jam, Mesh, rho_max);
+draw2DSolution(scenario, Rho, Mesh);
 
 %% First order scheme - Traffic Jam
 % ==========================================
 % ================ 3D PLOT =================
 % ==========================================
-draw3DSolution(scenario, Rho_2_jam, Mesh);
+draw3DSolution(scenario, Rho, Mesh);
+
 
 %% First order scheme - Green light
 % ==========================================
 % ========== NUMERICAL RESOLUTION ==========
 % ==========================================
 scenario = 'Green light';
-cond = setConditions(scenario, rho_max, Mesh.L, Mesh.x);
+[rho_L, rho_R, rho_x_0] = setConditions(scenario, rho_max, Mesh.L, Mesh.x);
 
-[Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh);
+[Rho,t_c] = runSolution(scenario, rho_x_0, rho_max, u_max, Mesh);
 
-%% First order scheme - Green light
+%% First order scheme - Traffic Jam
 % ==========================================
 % ================ 2D PLOT =================
 % ==========================================
-draw2DSolution(scenario, Rho, Mesh, rho_max);
+draw2DSolution(scenario, Rho, Mesh);
 
-%% First order scheme - Green light
-% ==========================================
-% ================ 3D PLOT =================
-% ==========================================
-draw3DSolution(scenario, Rho, Mesh);
-
-%% First order scheme - Traffic flow
-% ==========================================
-% ========== NUMERICAL RESOLUTION ==========
-% ==========================================
-scenario = 'Traffic flow';
-cond = setConditions(scenario, rho_max, Mesh.L, Mesh.x);
-
-[Rho,t_c] = runSolution(scenario, cond, rho_max, u_max, Mesh);
-
-%% First order scheme - Traffic flow
-% ==========================================
-% ================ 2D PLOT =================
-% ==========================================
-draw2DSolution(scenario, Rho, Mesh, rho_max);
-
-%% First order scheme - Traffic flow
+%% First order scheme - Traffic Jam
 % ==========================================
 % ================ 3D PLOT =================
 % ==========================================
