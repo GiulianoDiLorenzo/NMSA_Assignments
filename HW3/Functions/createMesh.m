@@ -16,7 +16,7 @@ Mesh.dx = L / Nx;                % Spatial step
 Mesh.dt = T / Nt;                % Time step (CFL condition should be checked)
 
 Mesh.x = linspace(0, L, Nx).';   % Spatial grid
-Mesh.t = linspace(0,T,Nt).';     % time grid
+Mesh.t = linspace(0,T,Nt+1).';     % time grid
 
 
 end

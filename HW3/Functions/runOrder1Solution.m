@@ -1,8 +1,8 @@
-function [Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh)
+function [Rho,t_c] = runOrder1Solution(scenario, rho_max, u_max, Mesh)
 
     Rho = zeros(Mesh.Nx, Mesh.Nt);
 
-    rho_x_0 = cond.rho_x_0;
+    rho_x_0 = scenario.rho_0;
 
     Rho(:,1) = rho_x_0;
     
@@ -15,11 +15,11 @@ function [Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh)
     t_c = min(abs(d_rho.*ddf));
     fprintf('Solution valid up to time t_c = %.3f s \n', t_c);
     
+    fprintf('Running order 1.....\n');
     for n = 1:Mesh.Nt       % rho contains the value for t=0 and is already computed
         
         Rho(1, n+1) = Rho(1, n);
         
-
         for i = 2:Mesh.Nx-1  % rho contains the value for x = {0 , L} and they stay constant
            
             % Update rule for the right cell
@@ -44,13 +44,13 @@ function [Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh)
         end
     
         % Apply boundary conditions  based on scenario
-        if strcmp(scenario, 'Traffic jam')
+        if strcmp(scenario.name, 'Traffic jam')
             % Already computed
-            Rho(end, n+1) = cond.rho_R;
-        elseif strcmp(scenario, 'Green light')
+            Rho(end, n+1) = scenario.rho_R;
+        elseif strcmp(scenario.name, 'Green light')
            % Free outflow boundary condition
            Rho(end, n+1) = Rho(end-1, n+1);
-        elseif strcmp(scenario, 'Traffic flow')
+        elseif strcmp(scenario.name, 'Traffic flow')
             % Free outflow boundary condition
             Rho(end, n+1) = Rho(end-1, n+1);
         else

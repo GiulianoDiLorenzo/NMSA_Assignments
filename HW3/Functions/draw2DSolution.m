@@ -1,4 +1,4 @@
-function [] = draw2DSolution(scenario, Rho, Mesh, rho_max, u_max)
+function [] = draw2DSolution(scenario_name, Rho, Mesh, rho_max, u_max)
     figure();
     grid on;
     xlabel('$x$ [m]');
@@ -25,8 +25,8 @@ function [] = draw2DSolution(scenario, Rho, Mesh, rho_max, u_max)
         ylabel('$\rho (x)$ [car/km]');
         ylim([-0.1, 1.2*rho_max]);
         title(sprintf(['%s solution, $\\rho_{max}= %.d[car/km]$ , $u_{max}= %.d[m/s]$, \n ' ...
-                       '$t =$ %.4f s'], scenario, rho_max, u_max, k*Mesh.dt));
-        pause(0.05);
+                       '$t =$ %.4f s'], scenario_name, rho_max, u_max, k*Mesh.dt));
+        pause(0.2);
         legend('$\rho(x,0)$', '$\rho(x,t)$');
         hold off;
         
