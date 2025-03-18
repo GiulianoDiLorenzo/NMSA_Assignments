@@ -119,41 +119,7 @@ shading interp; % Smooth color transition
 grid on;
 
 
-
 %%  Create an animation of the solution evolution
-figure();
-sgtitle(sprintf(['%s scenario animation' ...
-                 '$dx = %.3f$ km, $dt = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt));
-
-
-fps = 24;
-t = floor(linspace(1,size(Rho_1,2), fps));
-
-for n = t
-    subplot(2,1,1);
-    plot(Mesh.x, Rho_1(:, n), 'LineWidth', 1.5);
-    grid on;
-    xlabel('Position x [km]');
-    ylabel('Density \rho [vehicles/km]');
-    title(sprintf('1st order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
-    ylim([0, 1.1*rho_max]);
-
-
-    subplot(2,1,2);
-    plot(Mesh.x, Rho_2(:, n), 'LineWidth', 1.5);
-    grid on;
-    xlabel('Position x [km]');
-    ylabel('Density \rho [vehicles/km]');
-    title(sprintf('2nd order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
-    ylim([0, 1.1*rho_max]);
-    drawnow;
-
-    
-    pause(0.2);
-end
-
-
-%%  NEW Create an animation of the solution evolution
 figure();
 
 fps = 24;
@@ -184,6 +150,39 @@ for n = t
     hold off;
 end
 
+
+
+% %%  OLD Create an animation of the solution evolution
+% figure();
+% sgtitle(sprintf(['%s scenario animation' ...
+%                  '$dx = %.3f$ km, $dt = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt));
+% 
+% 
+% fps = 24;
+% t = floor(linspace(1,size(Rho_1,2), fps));
+% 
+% for n = t
+%     subplot(2,1,1);
+%     plot(Mesh.x, Rho_1(:, n), 'LineWidth', 1.5);
+%     grid on;
+%     xlabel('Position x [km]');
+%     ylabel('Density \rho [vehicles/km]');
+%     title(sprintf('1st order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
+%     ylim([0, 1.1*rho_max]);
+% 
+% 
+%     subplot(2,1,2);
+%     plot(Mesh.x, Rho_2(:, n), 'LineWidth', 1.5);
+%     grid on;
+%     xlabel('Position x [km]');
+%     ylabel('Density \rho [vehicles/km]');
+%     title(sprintf('2nd order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
+%     ylim([0, 1.1*rho_max]);
+%     drawnow;
+% 
+% 
+%     pause(0.2);
+% end
 
 
 % %% Param
