@@ -1,0 +1,293 @@
+% Traffic Flow Simulation with Second-Order Godunov Scheme
+% This script implements the solution of the traffic flow equation
+% using the second-order Godunov scheme with slope limiters.
+
+clear all;
+close all;
+clc;
+
+addpath Functions
+
+%% Parameters
+L = 1;          % Length of the domain [km]
+T = 1;          % Total simulation time [s]
+Nx = 100;       % Number of spatial cells
+Nt = 500;       % Number of time steps
+
+dx = L / Nx;    % Spatial step size
+dt = T / Nt;    % Time step size
+
+x = linspace(dx/2, L-dx/2, Nx)';  % Spatial grid (cell centers)
+t = linspace(0, T, Nt);           % Time grid
+
+rho_max = 1;    % Maximum density (normalized)
+u_max = 1;      % Maximum velocity (normalized)
+
+% Check CFL condition
+CFL = u_max * dt / dx;
+if CFL > 0.5
+    error('CFL condition for 2nd order method violated! CFL = %.4f > 0.5. Reduce dt or increase dx.', CFL);
+else
+    fprintf('CFL condition satisfied: %.4f < 0.5\n', CFL);
+end
+
+%% Define flux function and its derivatives
+f = @(rho) u_max * (rho - rho.^2/rho_max);
+df = @(rho) u_max * (1 - 2*rho/rho_max);
+ddf = -2 * u_max / rho_max;
+
+%% Select scenario
+% Uncomment the scenario you want to simulate
+% scenario = 'Traffic Jam';
+% scenario = 'Green Light';
+% scenario = 'Traffic Flow';
+scenario = setScenario();
+fprintf('Simulating %s scenario with 2nd-order Godunov method\n', scenario);
+
+%% Set initial condition based on scenario
+switch scenario
+    case 'Traffic jam'
+        rho_L = 0.8 * rho_max;
+        rho_R = rho_max;
+        rho_0 = zeros(Nx, 1);
+        rho_0(x < 0.5) = rho_L;
+        rho_0(x >= 0.5) = rho_R;
+        
+    case 'Green light'
+        rho_L = 0.7 * rho_max;
+        rho_R = 0.2 * rho_max;
+        rho_0 = zeros(Nx, 1);
+        rho_0(x < 0.5) = rho_L;
+        rho_0(x >= 0.5) = rho_R;
+        
+    case 'Traffic flow'
+        rho_L = rho_max;
+        rho_R = 0.5 * rho_max;
+        rho_0 = zeros(Nx, 1);
+        rho_0(x < 0.5) = rho_L;
+        rho_0(x >= 0.5) = rho_R;
+        
+    otherwise
+        error('Unknown scenario. Choose "Traffic Jam", "Green Light", or "Traffic Flow".');
+end
+
+%% Initialize solution array
+rho = zeros(Nx, Nt);
+rho(:, 1) = rho_0;  % Set initial condition
+
+%% Choose slope limiter
+% Options: 'minmod', 'superbee', 'vanLeer', 'MC', 'none'
+limiter_type = 'MC';
+fprintf('Using %s slope limiter\n', limiter_type);
+
+% %% Define slope limiter function
+% function r = slope_limiter(r, type)
+%     switch type
+%         case 'minmod'
+%             r = max(0, min(1, r));
+%         case 'superbee'
+%             r = max(0, max(min(1, 2*r), min(2, r)));
+%         case 'vanLeer'
+%             r = (r + abs(r)) ./ (1 + abs(r));
+%         case 'MC'
+%             % MC limiter (monotonized central)
+%             r = max(0, min(min(2, 2*r), (1+r)/2));
+%         case 'none'
+%             % No limiting (may lead to oscillations)
+%             r = ones(size(r));
+%         otherwise
+%             error('Unknown limiter type. Choose "minmod", "superbee", "vanLeer", "MC", or "none".');
+%     end
+% end
+
+% %% Define Godunov flux function
+% function F = godunov_flux(rho_L, rho_R, f)
+%     % Compute the Godunov flux at the interface between rho_L and rho_R
+% 
+%     % Find value at which df(rho) = 0 (critical density)
+%     rho_c = 0.5;  % For the flux function f(rho) = u_max * (rho - rho^2/rho_max), rho_c = rho_max/2
+% 
+%     if rho_L <= rho_R
+%         % Rarefaction wave
+%         if rho_L <= rho_c && rho_c <= rho_R
+%             % Critical density is between rho_L and rho_R
+%             F = f(rho_c);
+%         else
+%             % Take minimum of the two fluxes
+%             F = min(f(rho_L), f(rho_R));
+%         end
+%     else
+%         % Shock wave
+%         F = max(f(rho_L), f(rho_R));
+%     end
+% end
+
+%% Main time-stepping loop with second-order Godunov update
+for n = 1:Nt-1
+    % Apply boundary conditions appropriate for the scenario
+    switch scenario
+        case 'Traffic Jam'
+            % Fixed boundary conditions
+            rho(1, n) = rho_L;
+            rho(Nx, n) = rho_R;
+            
+        case 'Green Light'
+            % Fixed left boundary, free outflow right boundary
+            rho(1, n) = rho_L;
+            
+        case 'Traffic Flow'
+            % Fixed left boundary, free outflow right boundary
+            rho(1, n) = rho_L;
+    end
+    
+    % Step 1: Compute limited slopes for each cell
+    slopes = zeros(Nx, 1);
+    
+    % Extended state vector with ghost cells for proper slope computation at boundaries
+    rho_ext = [rho(1, n); rho(:, n); rho(Nx, n)];
+    
+    for i = 2:Nx+1  % Loop over interior cells (including ghost cells)
+        % Compute forward and backward differences
+        forward_diff = (rho_ext(i+1) - rho_ext(i)) / dx;
+        backward_diff = (rho_ext(i) - rho_ext(i-1)) / dx;
+        
+        % Compute ratio of slopes for limiting
+        if abs(backward_diff) < 1e-10
+            if abs(forward_diff) < 1e-10
+                r = 1;  % Both slopes are effectively zero
+            else
+                r = 100 * sign(forward_diff);  % Large r with sign of forward_diff
+            end
+        else
+            r = forward_diff / backward_diff;
+        end
+        
+        % Apply selected slope limiter
+        phi = slope_limiter(r, limiter_type);
+        
+        % Compute limited slope
+        slopes(i-1) = phi * backward_diff;
+    end
+    
+    % Step 2: Data reconstruction at cell interfaces
+    rho_interfaces_L = zeros(Nx+1, 1);
+    rho_interfaces_R = zeros(Nx+1, 1);
+    
+    % Compute left and right states at all interfaces
+    for i = 1:Nx-1
+        % Right boundary of cell i (left state at interface i+1/2)
+        rho_interfaces_L(i+1) = rho(i, n) + slopes(i) * dx/2;
+        
+        % Left boundary of cell i+1 (right state at interface i+1/2)
+        rho_interfaces_R(i+1) = rho(i+1, n) - slopes(i+1) * dx/2;
+    end
+    
+    % Handle domain boundaries
+    % Left boundary
+    rho_interfaces_L(1) = rho(1, n) - slopes(1) * dx/2;
+    rho_interfaces_R(1) = rho(1, n);  % Fixed boundary condition
+    
+    % Right boundary
+    rho_interfaces_L(Nx+1) = rho(Nx, n);  % Fixed boundary condition
+    rho_interfaces_R(Nx+1) = rho(Nx, n) + slopes(Nx) * dx/2;
+    
+    % Enforce physically meaningful values (density between 0 and rho_max)
+    rho_interfaces_L = max(0, min(rho_max, rho_interfaces_L));
+    rho_interfaces_R = max(0, min(rho_max, rho_interfaces_R));
+    
+    % Step 3: Compute fluxes at all interfaces using Godunov solver
+    fluxes = zeros(Nx+1, 1);
+    for i = 1:Nx+1
+        fluxes(i) = godunov_flux(rho_interfaces_L(i), rho_interfaces_R(i), f);
+    end
+    
+    % Step 4: Update solution using conservative formula
+    for i = 1:Nx
+        rho(i, n+1) = rho(i, n) - dt/dx * (fluxes(i+1) - fluxes(i));
+    end
+    
+    % Apply boundary conditions to the new time step
+    switch scenario
+        case 'Traffic Jam'
+            % Already set at the beginning of the loop
+            
+        case 'Green Light'
+            % Free outflow boundary condition
+            rho(Nx, n+1) = rho(Nx-1, n+1);
+            
+        case 'Traffic Flow'
+            % Free outflow boundary condition
+            rho(Nx, n+1) = rho(Nx-1, n+1);
+    end
+    
+    % Apply left boundary condition to the new time step
+    rho(1, n+1) = rho_L;
+    
+    % Ensure physical bounds are maintained (due to numerical errors)
+    rho(:, n+1) = max(0, min(rho_max, rho(:, n+1)));
+end
+
+%% Visualize results
+% Plot the final state
+figure;
+plot(x, rho_0, 'b--', 'LineWidth', 1.5);
+hold on;
+plot(x, rho(:, end), 'r-', 'LineWidth', 1.5);
+grid on;
+xlabel('Position x [km]');
+ylabel('Density \rho [vehicles/km]');
+ylim([-0.1 , rho_max*1.05])
+title(sprintf('%s: 2nd-Order Godunov - Initial and Final Density', scenario));
+legend('Initial Condition', 'Final Solution');
+
+%%  Create an animation of the solution evolution
+figure;
+
+fps = 24
+t = floor(linspace(1,size(rho,2), fps));
+%%
+for n = 1:10:Nt
+    plot(x, rho(:, n), 'LineWidth', 1.5);
+    grid on;
+    xlabel('Position x [km]');
+    ylabel('Density \rho [vehicles/km]');
+    title(sprintf('%s: 2nd-Order Godunov - t = %.3f s', scenario, t(n)));
+    ylim([0, 1.1*rho_max]);
+    drawnow;
+    pause(0.05);
+end
+
+%%
+for n = t
+    plot(x, rho(:, n), 'LineWidth', 1.5);
+    grid on;
+    xlabel('Position x [km]');
+    ylabel('Density \rho [vehicles/km]');
+    title(sprintf('%s: 2nd-Order Godunov - t = %.3f s', scenario, n*));
+    ylim([0, 1.1*rho_max]);
+    drawnow;
+    pause(0.05);
+end
+%% Create a space-time plot
+figure;
+[X, T] = meshgrid(x, t);
+surf(X, T, rho');  % Note the transpose of T and rho
+colormap jet;
+shading interp;
+xlabel('Position x [km]');
+ylabel('Time t [s]');
+zlabel('Density \rho [vehicles/km]');
+title(sprintf('%s: 2nd-Order Godunov - Density Evolution', scenario));
+view(45, 30);
+colorbar;
+
+% Compare with first-order solution (if available)
+% If you want to run first-order scheme for comparison, uncomment the following
+% and add code to compute first-order solution
+
+%% Runtime Performance Analysis
+fprintf('Simulation completed.\n');
+fprintf('CFL number used: %.4f\n', CFL);
+fprintf('Grid resolution: %d cells\n', Nx);
+fprintf('Time steps: %d\n', Nt);
+fprintf('Limiter: %s\n', limiter_type);

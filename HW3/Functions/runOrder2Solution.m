@@ -20,6 +20,14 @@ function [Rho,t_c] = runOrder2Solution(scenario, cond, rho_max, u_max, Mesh)
         
 
         for i = 2:Mesh.Nx-1  % rho contains the value for x = {0 , L} and they stay constant
+            
+
+            rho_Rm = Rho(i,n) + 0.5 * (Rho(i+1,n) - Rho(i,n));
+            rho_Rp = Rho(i,n) - 0.5 * (Rho(i+1,n) - Rho(i,n));
+
+
+            rho_Lm = Rho(i,n) + 0.5 * (Rho(i,n) - Rho(i-1,n));
+            rho_Lp = Rho(i,n) - 0.5 * (Rho(i,n) - Rho(i-1,n));
 
             rho_minus_ip = Rho(i,n) + 0.5 * (Rho(i+1,n) - Rho(i,n));  % ρ^n-_{i+1/2}
             rho_plus_ip = Rho(i+1,n) - 0.5 * (Rho(i+1,n) - Rho(i,n)); % ρ^n+_{i+1/2}
@@ -29,17 +37,17 @@ function [Rho,t_c] = runOrder2Solution(scenario, cond, rho_max, u_max, Mesh)
         
            
             % Update rule for the right cell
-             if rho_minus_ip <= rho_plus_ip
-                fR = min(f(rho_minus_ip), f(rho_plus_ip));
+             if rho_Rm <= rho_Rp
+                fR = min(f(rho_Rm), f(rho_Rp));
             else
-                fR = max(f(rho_minus_ip), f(rho_plus_ip));
+                fR = max(f(rho_Rm), f(rho_Rp));
             end
     
             % Update rule for the left cell
-            if rho_minus_im <= rho_plus_im
-                fL = min(f(rho_minus_im), f(rho_plus_im));
+            if rho_Lm <= rho_Lp
+                fL = min(f(rho_Lm), f(rho_Lp));
             else
-                fL = max(f(rho_minus_im), f(rho_plus_im));
+                fL = max(f(rho_Lm), f(rho_Lp));
             end
         
             Rho(i,n+1) = Rho(i,n) - Mesh.dt/Mesh.dx * (fR - fL);

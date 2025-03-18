@@ -8,7 +8,6 @@ function [Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh)
     
     f   =  @(rho) u_max * (rho - rho.^2/rho_max); 
     rho = linspace(0,rho_max,100);
-    plot(rho)
     df  =  @(rho) u_max * (1 - 2*rho/rho_max);
     ddf =  - 2 * u_max/rho_max;
     
@@ -16,7 +15,7 @@ function [Rho,t_c] = runOrder1Solution(scenario, cond, rho_max, u_max, Mesh)
     t_c = min(abs(d_rho.*ddf));
     fprintf('Solution valid up to time t_c = %.3f s \n', t_c);
     
-    for n = 1:Mesh.Nt-1       % rho contains the value for t=0 and is already computed
+    for n = 1:Mesh.Nt       % rho contains the value for t=0 and is already computed
         
         Rho(1, n+1) = Rho(1, n);
         

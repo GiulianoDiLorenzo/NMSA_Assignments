@@ -74,6 +74,7 @@ elseif strcmp(TestName,'TestHW1_2b')
     Data.uex_xx = @(x)  - (2*pi)^2 .* Data.uex(x);
 
     % Function handler for mu
+    L = 1;
     Data.mu = @(x) (x >= 0  & x < L/2) .* mu1 ...
                  + (x >= L/2 & x <= L) .* mu2; %...
                  %+ (x == L/2)   .* (mu1 + mu2)/2;

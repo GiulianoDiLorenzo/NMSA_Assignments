@@ -9,7 +9,7 @@ function [] = draw3DSolution(scenario, Rho, Mesh)
     colorbar; % Add color scale
     colormap(jet); % Use colormap for better visualization
     
-    xlabel('$x$ [m]');
+    xlabel('$x$ [km]');
     ylabel('$t$ [s]');
     zlabel('$\rho$ (vehicles/km)');
     % zlim([-0.1, rho_max+0.1])
