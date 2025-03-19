@@ -1,41 +1,34 @@
-function [rho] = runOrder2Solution(scenario, f, rho_max, rho_c, u_max, Mesh, limiter_type)
+function rho = second_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f, limiter_type)
+% SECOND_ORDER_GODUNOV Solves the traffic flow equation using second-order Godunov scheme
+%
+% Inputs:
+%   rho_0       - Initial density distribution
+%   rho_L       - Left boundary density value
+%   rho_R       - Right boundary density value
+%   scenario    - String specifying the scenario
+%   Mesh        - Structure of the Mesh 
+%   Nx          - Number of grid points
+%   Nt          - Number of time steps
+%   dx          - Grid spacing
+%   dt          - Time step size
+%   f           - Flux function handle
+%   limiter_type - String specifying the slope limiter type
+%
+% Output:
+%   rho         - Solution array with density at all grid points and time steps
     
     Nx = Mesh.Nx;
     Nt = Mesh.Nt;
     dx = Mesh.dx;
     dt = Mesh.dt;
-
-    % Check CFL condition
-    CFL = u_max * dt/dx;
-    if CFL > 0.5
-        error('CFL condition for 2nd order method violated! CFL = %.4f > 0.5. Reduce dt or increase dx.', CFL);
-    else
-        fprintf('CFL condition satisfied: %.4f < 0.5\n', CFL);
-    end
-
     % Initialize solution array
-    rho = zeros(Nx+1, Nt+1);
-    rho(:, 1) = scenario.rho_0;  % Set initial condition
-
-
-    fprintf('Running order 2.....\n');
-    % Main time-stepping loop with second-order Godunov update
+    rho = zeros(Nx, Nt+1);
+    rho(:, 1) = rho_0;  % Set initial condition
+    
+    % Main time-stepping loop
     for n = 1:Nt
-        % Apply boundary conditions appropriate for the scenario
-        switch scenario.name
-            case 'Traffic Jam'
-                % Fixed boundary conditions
-                rho(1, n) = scenario.rho_L;
-                rho(Nx, n) = scenario.rho_R;
-                
-            case 'Green Light'
-                % Fixed left boundary, free outflow right boundary
-                rho(1, n) = scenario.rho_L;
-                
-            case 'Traffic Flow'
-                % Fixed left boundary, free outflow right boundary
-                rho(1, n) = scenario.rho_L;
-        end
+        % Apply boundary conditions for the current time step
+        % rho = new_apply_BC(rho, n, Nx, scenario, rho_L, rho_R, f);
         
         % Step 1: Compute limited slopes for each cell
         slopes = zeros(Nx, 1);
@@ -88,15 +81,14 @@ function [rho] = runOrder2Solution(scenario, f, rho_max, rho_c, u_max, Mesh, lim
         rho_interfaces_L(Nx+1) = rho(Nx, n);  % Fixed boundary condition
         rho_interfaces_R(Nx+1) = rho(Nx, n) + slopes(Nx) * dx/2;
         
-        % Enforce physically meaningful values (density between 0 and rho_max)
-        rho_interfaces_L = max(0, min(rho_max, rho_interfaces_L));
-        rho_interfaces_R = max(0, min(rho_max, rho_interfaces_R));
+        % Enforce physically meaningful values
+        rho_interfaces_L = max(0, min(1, rho_interfaces_L));
+        rho_interfaces_R = max(0, min(1, rho_interfaces_R));
         
         % Step 3: Compute fluxes at all interfaces using Godunov solver
         fluxes = zeros(Nx+1, 1);
         for i = 1:Nx+1
-            fluxes(i) = godunov_flux(rho_interfaces_L(i), rho_interfaces_R(i), rho_c, f);
-
+            fluxes(i) = godunov_flux(rho_interfaces_L(i), rho_interfaces_R(i), f);
         end
         
         % Step 4: Update solution using conservative formula
@@ -105,25 +97,28 @@ function [rho] = runOrder2Solution(scenario, f, rho_max, rho_c, u_max, Mesh, lim
         end
         
         % Apply boundary conditions to the new time step
-        switch scenario.name
+        switch scenario
             case 'Traffic Jam'
-                % Already set at the beginning of the loop
+                % Fixed boundary conditions
+                rho(1, n+1) = rho_L;
+                rho(Nx, n+1) = rho_R;
                 
             case 'Green Light'
-                % Free outflow boundary condition
-                rho(Mesh.Nx, n+1) = rho(Nx-1, n+1);
+                % Fixed left boundary
+                rho(1, n+1) = rho_L;
+                
+                % Update right boundary with the calculated value (outflow)
+                % We keep the calculated value from the flux update
                 
             case 'Traffic Flow'
-                % Free outflow boundary condition
-                rho(Mesh.Nx, n+1) = rho(Nx-1, n+1);
+                % Fixed left boundary
+                rho(1, n+1) = rho_L;
+                
+                % Update right boundary with the calculated value (outflow)
+                % We keep the calculated value from the flux update
         end
         
-        % Apply left boundary condition to the new time step
-        rho(1, n+1) = scenario.rho_L;
-        
-        % Ensure physical bounds are maintained (due to numerical errors)
-        rho(:, n+1) = max(0, min(rho_max, rho(:, n+1)));
+        % Ensure physical bounds
+        rho(:, n+1) = max(0, min(1, rho(:, n+1)));
     end
-
-
 end

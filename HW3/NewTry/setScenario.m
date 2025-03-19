@@ -3,8 +3,6 @@ function [scenario] = setScenario(rho_max, rho_c, x, Nx)
     scenario = struct();
 
 
-
-
     options = {'Traffic jam' , 'Green light', 'Traffic flow' };
         
         % Create selection dialog
