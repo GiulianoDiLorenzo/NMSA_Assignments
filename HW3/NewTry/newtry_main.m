@@ -62,16 +62,16 @@ end
 
 %% Select scenario
 % Uncomment the scenario you want to simulate
-scenario = 'Traffic jam';
-% scenario = 'Green light';
-% scenario = 'Traffic flow';
+%sce = 'Traffic jam';
+% sce = 'Green light';
+sce = 'Traffic flow';
 
-% [scenario] = setScenario(rho_max, rho_c, Mesh.x, Mesh.Nx)
+[scenario] = setScenario(sce, rho_max, rho_c, Mesh.x, Mesh.Nx);
 
-fprintf('Simulating %s scenario\n', scenario);
+fprintf('Simulating %s scenario\n', scenario.name);
 
 %% Set initial condition based on scenario
-[rho_0, rho_L, rho_R] = init_condition(scenario, rho_max, Mesh.x, Mesh.Nx);
+% [rho_0, rho_L, rho_R] = init_condition(scenario, rho_max, Mesh.x, Mesh.Nx);
 
 %% Select slope limiter for 2nd order scheme
 % Options: 'minmod', 'superbee', 'vanLeer', 'MC', 'none'
@@ -80,10 +80,10 @@ fprintf('Using %s slope limiter for 2nd order scheme\n', limiter_type);
 
 %% Solve using both schemes
 % First-order solution
-rho_1st = first_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f);
+rho_1st = first_order_godunov(scenario.rho_0, scenario.rho_L, scenario.rho_R, scenario.name, Mesh, f);
 
 % Second-order solution
-rho_2nd = second_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f, limiter_type);
+rho_2nd = second_order_godunov(scenario.rho_0, scenario.rho_L, scenario.rho_R, scenario.name, Mesh, f, limiter_type);
 
 %% Visualize results
 
@@ -92,7 +92,7 @@ rho_2nd = second_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f, limiter_t
 [X, T] = meshgrid(Mesh.x, Mesh.t); % Create space-time grid
     
 figure();
-sgtitle(sprintf('%s solution for $\\rho(x,t)$, dx = %.3f km, dt = %.3f s', scenario, Mesh.dx, Mesh.dt));
+sgtitle(sprintf('%s solution for $\\rho(x,t)$, dx = %.3f km, dt = %.3f s', scenario.name, Mesh.dx, Mesh.dt));
  
 subplot(1,2,1);
 surf(X, T, rho_1st', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
@@ -145,7 +145,7 @@ for n = t
     ylabel('Density $\rho$ [vehicles/km]');
     title(sprintf(['%s scenario animation ' ...
                  '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
-                 '$t = %.3f$ s'], scenario, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt));
+                 '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt));
 
     % title(sprintf('1st order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
     ylim([0, 1.1*rho_max]);

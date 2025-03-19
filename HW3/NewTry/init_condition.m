@@ -21,14 +21,14 @@ function [rho_0, rho_L, rho_R] = init_condition(scenario, rho_max, x, Nx)
             rho_0(x >= 0.5) = rho_R;
             
         case 'Green light'
-            rho_L = 0.3 * rho_max;
+            rho_L = 0.9 * rho_max;
             rho_R = 0.6 * rho_max;
             rho_0 = zeros(Nx, 1);
             rho_0(x < 0.5) = rho_L;
             rho_0(x >= 0.5) = rho_R;
             
         case 'Traffic flow'
-            rho_L = 0.8 * rho_max;
+            rho_L = rho_max;
             rho_R = 0.5 * rho_max;
             rho_0 = zeros(Nx, 1);
             rho_0(x < 0.5) = rho_L;
