@@ -37,8 +37,8 @@ function rho = GodunovOrder1(scenario, Mesh, f)
         % Update interior points using first-order Godunov scheme
         for i = 2:Nx-1
             % Calculate fluxes at cell interfaces
-            fR = computeFlux(rho(i, n), rho(i+1, n), f);
-            fL = computeFlux(rho(i-1, n), rho(i, n), f);
+            fR = computeFlux1(rho(i, n), rho(i+1, n), f);
+            fL = computeFlux1(rho(i-1, n), rho(i, n), f);
             
             % Update solution
             rho(i, n+1) = rho(i, n) - dt/dx * (fR - fL);

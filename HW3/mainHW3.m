@@ -52,9 +52,12 @@ f = @(rho) u_max * (rho - rho.^2/rho_max);
 df = @(rho) u_max * (1 - 2*rho/rho_max);
 ddf = -2 * u_max / rho_max;
 
-f_ex = @(rho) rho .* log10(rho_max/rho);
-df_ex = @(rho) log10(rho/rho_max) + 1;
+f_ex = @(rho) rho .* log10(rho_max./rho);
+df_ex = @(rho) log10(rho_max./rho) -1;
 ddf_ex = @(rho) 1/rho;
+
+% drawFluxes(rho_max, u_max);
+% saveas(gcf, 'Pictures/Fluxes_graph.png');
 
 Mesh = createMesh(L, T, Nx, Nt);
 
@@ -140,7 +143,7 @@ grid on;
 
 subplot(2,2,3);
 surf(X, T, rho_1st_ex.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
-title('1st order scheme with $f(\rho) = \rho \log(\rho / \rho_{max})$');
+title('1st order scheme with $f(\rho) = \rho \log(\rho_{max} / \rho)$');
 colorbar; % Add color scale
 colormap(jet); % Use colormap for better visualization
 clim([min(scenario.rho_L, scenario.rho_R),max(scenario.rho_L, scenario.rho_R)]); % Set common color limits
@@ -155,7 +158,7 @@ grid on;
 
 subplot(2,2,4);
 surf(X, T, rho_2nd_ex.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
-title('2nd order scheme with $f(\rho) = \rho \log(\rho / \rho_{max})$');
+title('2nd order scheme with $f(\rho) = \rho \log(\rho_{max} / \rho)$');
 colorbar; % Add color scale
 colormap(jet); % Use colormap for better visualization
 clim([min(scenario.rho_L, scenario.rho_R),max(scenario.rho_L, scenario.rho_R)]); % Set common color limits
@@ -174,7 +177,7 @@ grid on;
 
 
 
-%%  2D time variant plot
+%%  Animation of the 2D plot in time
 fps = 24;
 t = floor(linspace(1,size(rho_1st,2), fps));
 

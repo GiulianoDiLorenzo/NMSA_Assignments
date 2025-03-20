@@ -1,4 +1,4 @@
-function F computeFlux(rho_L, rho_R, f)
+function F = computeFlux1(rho_L, rho_R, f)
 % GODUNOV_FLUX Computes the Godunov flux at the interface between two states
 %
 % Inputs:
