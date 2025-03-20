@@ -54,6 +54,7 @@ for i = 2:num_pts-1
     % ===================================================================
     prod1= rho(x_j_p_prev) * phi_i_prev(x_j_p_prev) * phi_i_now(x_j_p_prev);
     prod2= rho(x_j_n_prev) * phi_i_prev(x_j_n_prev) * phi_i_now(x_j_n_prev);
+    
     sum1 = prod1 + prod2;
 
     M(i,i-1) = h/2 * sum1;

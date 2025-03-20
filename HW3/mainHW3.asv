@@ -61,16 +61,16 @@ Mesh = createMesh(L, T, Nx, Nt);
 % Check CFL condition for both schemes
 CFL = u_max * Mesh.dt / Mesh.dx;
 if CFL > 0.5
-    error('CFL condition for 2nd order method violated! CFL = %.4f > 0.5. Reduce dt or increase dx.', CFL);
+    error('CFL condition for 2nd order method violated! CFL = %.4f > 0.5. Reduce dt or increase dx.\n', CFL);
 else
     fprintf('CFL condition satisfied: %.4f < 0.5\n', CFL);
 end
 
 %% Select scenario
 % Uncomment the scenario you want to simulate
-% sce = 'Traffic jam';
+sce = 'Traffic jam';
 % sce = 'Green light';
-sce = 'Traffic flow';
+% sce = 'Traffic flow';
 
 [scenario] = setScenario(sce, rho_max, rho_c, Mesh.x, Mesh.Nx);
 fprintf('Simulating %s scenario\n', scenario.name);
@@ -100,11 +100,13 @@ rho_2nd_ex = real(rho_2nd_ex);
 [X, T] = meshgrid(Mesh.x, Mesh.t); % Create space-time grid
     
 figure();
-sgtitle(sprintf('%s solution for $\\rho(x,t)$, dx = %.3f km, dt = %.3f s', scenario.name, Mesh.dx, Mesh.dt));
+sgtitle(sprintf('%s solution for $\\rho(x,t)$, dx = %.2f km, dt = %.3f s', scenario.name, Mesh.dx, Mesh.dt));
  
 subplot(2,2,1);
 surf(X, T, rho_1st.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
-title('1st order scheme');
+title('1st order scheme with $f(\rho)= u_{\max} \left( \rho-\rho^2 / \rho _{max} \right)$');
+
+
 xlabel('$x$ [km]');
 ylabel('$t$ [s]');
 zlabel('$\rho$ (vehicles/km)');
@@ -122,7 +124,7 @@ grid on;
 
 subplot(2,2,2);
 surf(X, T, rho_2nd.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
-title('2nd order scheme');
+title('2nd order scheme with $f(\rho)= u_{\max} \left( \rho-\rho^2 / \rho _{max} \right)$');
 colorbar; % Add color scale
 colormap(jet); % Use colormap for better visualization
 clim([min(scenario.rho_L, scenario.rho_R),max(scenario.rho_L, scenario.rho_R)]); % Set common color limits
@@ -138,7 +140,7 @@ grid on;
 
 subplot(2,2,3);
 surf(X, T, rho_1st_ex.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
-title('1st order scheme with exact flux');
+title('1st order scheme with $f(\rho) = \rho \log(\rho / \rho_{max})$');
 colorbar; % Add color scale
 colormap(jet); % Use colormap for better visualization
 clim([min(scenario.rho_L, scenario.rho_R),max(scenario.rho_L, scenario.rho_R)]); % Set common color limits
@@ -153,7 +155,7 @@ grid on;
 
 subplot(2,2,4);
 surf(X, T, rho_2nd_ex.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
-title('2nd order scheme with exact flux');
+title('2nd order scheme with $f(\rho) = \rho \log(\rho / \rho_{max})$');
 colorbar; % Add color scale
 colormap(jet); % Use colormap for better visualization
 clim([min(scenario.rho_L, scenario.rho_R),max(scenario.rho_L, scenario.rho_R)]); % Set common color limits
@@ -165,6 +167,10 @@ ylim([0, Mesh.T*1.01])
 view(0,90);  % Adjust view angle for better visualization
 shading interp; % Smooth color transition
 grid on;
+
+% Save plots
+saveas(gcf, sprintf('Pictures/%s full comp.png', scenario.name));
+
 
 
 
@@ -191,7 +197,10 @@ for n = t
     % title(sprintf('1st order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
     ylim([0.99*min(scenario.rho_L, scenario.rho_R), 1.01*rho_max]);
 
-    legend([p1, p2, p3, p4], {'1st order scheme', '2nd order scheme', '1st order scheme with exact flux', '2nd order scheme with exact flux'}, 'Location', 'best');
+    legend([p1, p2, p3, p4], {'1st order scheme with $f_1(\rho)$', ...
+                              '2nd order scheme with $f_1(\rho) \ $', ...
+                              '1st order scheme with $f_2(\rho)$', ...
+                              '2nd order scheme with $f_2(\rho) \ $'}, 'Location', 'best');
 
 
     drawnow;
@@ -217,7 +226,7 @@ end
 filename = fullfile(picturesFolder, sprintf('%s animation.gif', scenario.name));
 
 
-filename = sprintf('%s animation.gif', scenario.name);
+filename = sprintf('GIFs/%s animation.gif', scenario.name);
 figure('Position', [100 100 800 600]);  % Set figure size for better quality
 
 % First iteration to set up the gif file
@@ -234,14 +243,18 @@ p4 = plot(Mesh.x, rho_2nd_ex(:,n), 'LineWidth', 1.5, 'Color', [1, 0.5, 0]);
 xlabel('Position $x$ [km]', 'Interpreter', 'latex');
 ylabel('Density $\rho$ [vehicles/km]', 'Interpreter', 'latex');
 title(sprintf(['%s scenario animation ' ...
-    '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
-    '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt), 'Interpreter', 'latex');
+               '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
+               '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt), 'Interpreter', 'latex');
+
 ylim([0.99*min(scenario.rho_L, scenario.rho_R), 1.01*rho_max]);
-legend([p1, p2, p3, p4], {'1st order scheme', '2nd order scheme', '1st order scheme with exact flux', '2nd order scheme with exact flux'}, 'Location', 'best');
+legend([p1, p2, p3, p4], {'1st order scheme with $f_1(\rho)$', ...
+                          '2nd order scheme with $f_1(\rho) \ $', ...
+                          '1st order scheme with $f_2(\rho)$', ...
+                          '2nd order scheme with $f_2(\rho) \ $'}, 'Location', 'best');
 drawnow;
 
 
-%% Capture the frame and save it to the gif file
+% Capture the frame and save it to the gif file
 frame = getframe(gcf);
 im = frame2im(frame);
 [imind, cm] = rgb2ind(im, 256);
@@ -250,6 +263,13 @@ imwrite(imind, cm, filename, 'gif', 'Loopcount', inf, 'DelayTime', 1/fps);
 % Subsequent frames
 for i = 2:length(t)
     n = t(i);
+    % fprintf('Animation progress %d  %', round(i/length(t))*100);
+
+    % Display progress less frequently for GIF creation
+    if mod(i, floor(length(t)/5)) == 0
+        % fprintf('GIF progress: %.0f%%\n', 100*i/length(t));
+        fprintf('\rGIF progress: %.0f%%', 100*i/length(t));  % Overwrites the same line
+    end
     
     % Create the plot
     p1 = plot(Mesh.x, rho_1st(:, n), 'LineWidth', 1.5, 'Color',[0.5, 0, 0.5]);
@@ -264,7 +284,10 @@ for i = 2:length(t)
         '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
         '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt), 'Interpreter', 'latex');
     ylim([0.99*min(scenario.rho_L, scenario.rho_R), 1.01*rho_max]);
-    legend([p1, p2, p3, p4], {'1st order scheme', '2nd order scheme', '1st order scheme with exact flux', '2nd order scheme with exact flux'}, 'Location', 'best');
+    legend([p1, p2, p3, p4], {'1st order scheme with $f_1(\rho)$', ...
+                              '2nd order scheme with $f_1(\rho) \ $', ...
+                              '1st order scheme with $f_2(\rho)$', ...
+                              '2nd order scheme with $f_2(\rho) \ $'}, 'Location', 'best');
     drawnow;
     
     % Capture the frame and append it to the gif file
@@ -281,8 +304,14 @@ fprintf('Animation saved as %s\n', filename);
 
 
 %% Claude proposal for GIF
+fps = 24;  % Frames per second
+duration = 5;  % Duration of animation in seconds
+total_frames = fps * duration;
+frame_indices = floor(linspace(1, size(rho_1st, 2), total_frames));
 
-% Add this code at the end of your script to create an animation file
+gif_filename = sprintf('%s_traffic_simulation.gif', scenario.name);
+create_gif_animation(rho_1st, rho_2nd, rho_1st_ex, rho_2nd_ex, ...
+                    Mesh, scenario, rho_max, L, fps, duration, gif_filename);
 
 %% Create and save animation for embedding in Overleaf
 fps = 24;  % Frames per second

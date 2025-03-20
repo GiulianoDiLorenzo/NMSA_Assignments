@@ -1,4 +1,4 @@
-function rho = second_order_godunov(scenario, Mesh, f, limiter_type)
+function rho = GodunovOrder2(scenario, Mesh, f, limiter_type)
 % SECOND_ORDER_GODUNOV Solves the traffic flow equation using second-order Godunov scheme
 %
 % Inputs:
@@ -58,7 +58,7 @@ function rho = second_order_godunov(scenario, Mesh, f, limiter_type)
             end
             
             % Apply selected slope limiter
-            phi = slope_limiter(r, limiter_type);
+            phi = slopeLimiter(r, limiter_type);
             
             % Compute limited slope
             slopes(i-1) = phi * backward_diff;
@@ -93,7 +93,7 @@ function rho = second_order_godunov(scenario, Mesh, f, limiter_type)
         % Step 3: Compute fluxes at all interfaces using Godunov solver
         fluxes = zeros(Nx+1, 1);
         for i = 1:Nx+1
-            fluxes(i) = godunov_flux(rho_interfaces_L(i), rho_interfaces_R(i), f);
+            fluxes(i) = computeFlux(rho_interfaces_L(i), rho_interfaces_R(i), f);
         end
         
         % Step 4: Update solution using conservative formula
@@ -102,28 +102,31 @@ function rho = second_order_godunov(scenario, Mesh, f, limiter_type)
         end
         
         % Apply boundary conditions to the new time step
-        switch scenario.name
-            case 'Traffic_jam'
-                % Fixed boundary conditions
-                rho(1, n+1) = rho_L;
-                rho(Nx, n+1) = rho_R;
-                
-            case 'Green_light'
-                % Fixed left boundary
-                rho(1, n+1) = rho_L;
-                
-                % Update right boundary with the calculated value (outflow)
-                % We keep the calculated value from the flux update
-                
-            case 'Traffic_flow'
-                % Fixed left boundary
-                rho(1, n+1) = rho_L;
-                
-                % Update right boundary with the calculated value (outflow)
-                % We keep the calculated value from the flux update
-        end
-        
+        rho = applyBC(rho, n+1, Nx, scenario, f);
+
+        % switch scenario.name
+        %     case 'Traffic_jam'
+        %         % Fixed boundary conditions
+        %         rho(1, n+1) = rho_L;
+        %         rho(Nx, n+1) = rho_R;
+        % 
+        %     case 'Green_light'
+        %         % Fixed left boundary
+        %         rho(1, n+1) = rho_L;
+        % 
+        %         % Update right boundary with the calculated value (outflow)
+        %         % We keep the calculated value from the flux update
+        % 
+        %     case 'Traffic_flow'
+        %         % Fixed left boundary
+        %         rho(1, n+1) = rho_L;
+        % 
+        %         % Update right boundary with the calculated value (outflow)
+        %         % We keep the calculated value from the flux update
+        % end
+        % 
         % Ensure physical bounds
+
         rho(:, n+1) = max(0, min(1, rho(:, n+1)));
     end
 end

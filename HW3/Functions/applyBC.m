@@ -1,4 +1,4 @@
-function rho = apply_boundary_conditions(rho, n, Nx, scenario, rho_L, rho_R)
+function rho = applyBC(rho, n, Nx, scenario, f)
 % APPLY_BOUNDARY_CONDITIONS Sets the boundary values based on the scenario
 %
 % Inputs:
@@ -12,20 +12,23 @@ function rho = apply_boundary_conditions(rho, n, Nx, scenario, rho_L, rho_R)
 % Output:
 %   rho      - Updated density array with boundary conditions applied
 
-    switch scenario
-        case 'Traffic Jam'
+    switch scenario.name
+        case 'Traffic jam'
             % Fixed boundary conditions
-            rho(1, n) = rho_L;
-            rho(Nx, n) = rho_R;
+            rho(1, n) = scenario.rho_L;
+            rho(Nx, n) = scenario.rho_R;
             
-        case 'Green Light'
+        case 'Green light'
             % Fixed left boundary, free outflow right boundary
-            rho(1, n) = rho_L;
-            rho(Nx, n) = rho(Nx-1, n);  % Zero-gradient (free outflow)
-            
-        case 'Traffic Flow'
+            rho(1, n) = scenario.rho_L;
+            rho(Nx, n) = rho(Nx-1, n);
+             
+        case 'Traffic flow'
             % Fixed left boundary, free outflow right boundary
-            rho(1, n) = rho_L;
+            rho(1, n) = scenario.rho_L;
             rho(Nx, n) = rho(Nx-1, n);  % Zero-gradient (free outflow)
+            % fL = godunov_flux_1(rho(Nx-2, n), rho(Nx-1, n), f);
+            % fR = godunov_flux_1(rho(Nx-1, n), rho(Nx, n), f);
+            % rho(Nx, n+1) = rho(Nx, n) - dt/dx * (fR - fL);
     end
 end

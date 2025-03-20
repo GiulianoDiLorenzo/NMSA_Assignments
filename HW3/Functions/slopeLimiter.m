@@ -1,4 +1,4 @@
-function r = slope_limiter(r, type)
+function r = slopeLimiter(r, type)
     switch type
         case 'minmod'
             r = max(0, min(1, r));
