@@ -26,16 +26,16 @@ set(groot, 'DefaultTextInterpreter', 'latex', ...           % interpreter Latex 
            'DefaultFigureColor', 'w', ...                   % background color
            'DefaultLegendLocation', 'best' ...              % legend position
            );
-           %'DefaultAxesBox', 'on', ...                    % plot box
+  
  
 
 
 
 %% Parameters
 L = 1;          % Length of the domain [km]
-T = 1;          % Total simulation time [s]
+T = 10;          % Total simulation time [s]
 Nx = 100;       % Number of spatial cells
-Nt = 500;       % Number of time steps
+Nt = 500*T;       % Number of time steps
 
 % dx = L / Nx;    % Spatial step size
 % dt = T / Nt;    % Time step size
@@ -72,8 +72,8 @@ end
 %% Select scenario
 % Uncomment the scenario you want to simulate
 % sce = 'Traffic jam';
-% sce = 'Green light';
-sce = 'Traffic flow';
+sce = 'Green light';
+% sce = 'Traffic flow';
 
 [scenario] = setScenario(sce, rho_max, rho_c, Mesh.x, Mesh.Nx);
 fprintf('Simulating %s scenario\n', scenario.name);
@@ -96,14 +96,13 @@ rho_2nd_ex = GodunovOrder2(scenario, Mesh, f_ex, limiter_type);
 rho_1st_ex = real(rho_1st_ex);
 rho_2nd_ex = real(rho_2nd_ex);
 
-%% Visualize results
+%% 3D Plots - Visualize results
 
 
-% %% 3D Plots
 [X, T] = meshgrid(Mesh.x, Mesh.t); % Create space-time grid
     
 figure();
-sgtitle(sprintf('%s solution for $\\rho(x,t)$, dx = %.2f km, dt = %.3f s', scenario.name, Mesh.dx, Mesh.dt));
+sgtitle(sprintf('%s solution for $\\rho(x,t)$\nWith $dx = %.2f$ km, $dt = %.3f$ s, $T = %d$ s', scenario.name, Mesh.dx, Mesh.dt, Mesh.T));
  
 subplot(2,2,1);
 surf(X, T, rho_1st.', 'EdgeColor', 'none'); % Transpose Rho to match dimensions
@@ -172,14 +171,16 @@ shading interp; % Smooth color transition
 grid on;
 
 % Save plots
-% saveas(gcf, sprintf('Pictures/%s full comp.png', scenario.name));
+% saveas(gcf, sprintf('Pictures/%s full comp %ds.png', scenario.name, Mesh.T));
 
 
 
 
 %%  Animation of the 2D plot in time
 fps = 24;
-t = floor(linspace(1,size(rho_1st,2), fps));
+fps_scaled = round(fps* (-Mesh.T/18 + 19/18));
+num_frames = fps_scaled * Mesh.T;
+t = floor(linspace(1, size(rho_1st, 2), num_frames));
 
 figure();
 for n = t
@@ -193,9 +194,9 @@ for n = t
 
     xlabel('Position $x$ [km]');
     ylabel('Density $\rho$ [vehicles/km]');
-    title(sprintf(['%s scenario animation ' ...
-                 '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
-                 '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt));
+    title(sprintf(['%s scenario animation\n' ...
+                 '$dx = %.3f$ km, $dt = %.3f$ s, $T = %d$ s\n' ...
+                 '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, Mesh.T, (n-1)*Mesh.dt));
 
     % title(sprintf('1st order scheme - $t = %.3f$ s', (n-1)*Mesh.dt));
     ylim([0.99*min(scenario.rho_L, scenario.rho_R), 1.01*rho_max]);
@@ -217,7 +218,9 @@ end
 
 %% Create and save animation as GIF
 fps = 24;
-t = floor(linspace(1, size(rho_1st, 2), fps));
+fps_scaled = round(fps* (-Mesh.T/18 + 19/18));
+num_frames = fps_scaled * Mesh.T;
+t = floor(linspace(1, size(rho_1st, 2), num_frames));
 
 % Create Pictures subfolder if it doesn't exist
 picturesFolder = fullfile('Pictures');
@@ -226,10 +229,10 @@ if ~exist(picturesFolder, 'dir')
 end
 
 % Set file path and name
-filename = fullfile(picturesFolder, sprintf('%s animation.gif', scenario.name));
+filename = fullfile(picturesFolder, sprintf('%s animation %ds.gif', scenario.name, Mesh.T));
 
 
-filename = sprintf('GIFs/%s animation.gif', scenario.name);
+filename = sprintf('GIFs/%s animation %ds.gif', scenario.name, Mesh.T);
 figure('Position', [100 100 800 600]);  % Set figure size for better quality
 
 % First iteration to set up the gif file
@@ -245,9 +248,9 @@ p4 = plot(Mesh.x, rho_2nd_ex(:,n), 'LineWidth', 1.5, 'Color', [1, 0.5, 0]);
 
 xlabel('Position $x$ [km]', 'Interpreter', 'latex');
 ylabel('Density $\rho$ [vehicles/km]', 'Interpreter', 'latex');
-title(sprintf(['%s scenario animation ' ...
-               '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
-               '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt), 'Interpreter', 'latex');
+title(sprintf(['%s scenario animation\n' ...
+               '$dx = %.3f$ km, $dt = %.3f$ s, $T = %d$ s\n' ...
+               '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, Mesh.T, (n-1)*Mesh.dt), 'Interpreter', 'latex');
 
 ylim([0.99*min(scenario.rho_L, scenario.rho_R), 1.01*rho_max]);
 legend([p1, p2, p3, p4], {'1st order scheme with $f_1(\rho)$', ...
@@ -283,9 +286,9 @@ for i = 2:length(t)
     p4 = plot(Mesh.x, rho_2nd_ex(:,n), 'LineWidth', 1.5, 'Color', [1, 0.5, 0]); 
     xlabel('Position $x$ [km]', 'Interpreter', 'latex');
     ylabel('Density $\rho$ [vehicles/km]', 'Interpreter', 'latex');
-    title(sprintf(['%s scenario animation ' ...
-        '$dx = %.3f$ km, $dt = %.3f$ s\n' ...
-        '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, (n-1)*Mesh.dt), 'Interpreter', 'latex');
+    title(sprintf(['%s scenario animation\n' ...
+               '$dx = %.3f$ km, $dt = %.3f$ s, $T = %d$ s\n' ...
+               '$t = %.3f$ s'], scenario.name, Mesh.dx, Mesh.dt, Mesh.T, (n-1)*Mesh.dt), 'Interpreter', 'latex');
     ylim([0.99*min(scenario.rho_L, scenario.rho_R), 1.01*rho_max]);
     legend([p1, p2, p3, p4], {'1st order scheme with $f_1(\rho)$', ...
                               '2nd order scheme with $f_1(\rho) \ $', ...

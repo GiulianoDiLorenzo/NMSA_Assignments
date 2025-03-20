@@ -20,7 +20,8 @@ function rho = applyBC(rho, n, Nx, scenario, f)
             
         case 'Green light'
             % Fixed left boundary, free outflow right boundary
-            rho(1, n) = scenario.rho_L;
+            rho(1,n) = scenario.rho_L;
+            % rho(1, n) = rho(2, n);
             rho(Nx, n) = rho(Nx-1, n);
              
         case 'Traffic flow'

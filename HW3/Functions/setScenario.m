@@ -13,7 +13,7 @@ function [scenario] = setScenario(sce, rho_max, rho_c, x, Nx)
     elseif strcmp(sce, 'Green light')
         scenario.name = "Green light";
         scenario.rho_L = 0.9 * rho_max;
-        scenario.rho_R = 0.6 * rho_max;
+        scenario.rho_R = 0.1 * rho_max;
         scenario.rho_0 = zeros(Nx, 1);
         scenario.rho_0(x < 0.5) = scenario.rho_L;
         scenario.rho_0(x >= 0.5) = scenario.rho_R;
