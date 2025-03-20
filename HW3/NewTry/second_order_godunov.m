@@ -1,4 +1,4 @@
-function rho = second_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f, limiter_type)
+function rho = second_order_godunov(scenario, Mesh, f, limiter_type)
 % SECOND_ORDER_GODUNOV Solves the traffic flow equation using second-order Godunov scheme
 %
 % Inputs:
@@ -21,6 +21,11 @@ function rho = second_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f, limi
     Nt = Mesh.Nt;
     dx = Mesh.dx;
     dt = Mesh.dt;
+
+    rho_0 = scenario.rho_0;
+    rho_L = scenario.rho_L;
+    rho_R = scenario.rho_R;
+
     % Initialize solution array
     rho = zeros(Nx, Nt+1);
     rho(:, 1) = rho_0;  % Set initial condition
@@ -97,20 +102,20 @@ function rho = second_order_godunov(rho_0, rho_L, rho_R, scenario, Mesh, f, limi
         end
         
         % Apply boundary conditions to the new time step
-        switch scenario
-            case 'Traffic Jam'
+        switch scenario.name
+            case 'Traffic_jam'
                 % Fixed boundary conditions
                 rho(1, n+1) = rho_L;
                 rho(Nx, n+1) = rho_R;
                 
-            case 'Green Light'
+            case 'Green_light'
                 % Fixed left boundary
                 rho(1, n+1) = rho_L;
                 
                 % Update right boundary with the calculated value (outflow)
                 % We keep the calculated value from the flux update
                 
-            case 'Traffic Flow'
+            case 'Traffic_flow'
                 % Fixed left boundary
                 rho(1, n+1) = rho_L;
                 
