@@ -1,0 +1,43 @@
+function [results] = runFullStudy(L,T,Nx,Nt,sce, f, f_ex, u_max, rho_max, rho_c)
+
+    % Initialize the output;
+    results = struct();
+
+    %% Creating Mesh, and Scenario
+    Mesh = createMesh(L, T, Nx, Nt);
+
+    % Check CFL condition for both schemes
+    CFL = u_max * Mesh.dt / Mesh.dx;
+    if CFL > 0.5
+        error('CFL condition for 2nd order method violated! CFL = %.4f > 0.5. Reduce dt or increase dx.\n', CFL);
+    else
+        fprintf('CFL condition satisfied: %.4f < 0.5\n\n', CFL);
+    end
+    
+    
+    [scenario] = setScenario(sce, rho_max, rho_c, Mesh.x, Mesh.Nx);
+    fprintf('Simulating %s scenario\n', scenario.name);
+    
+    % Options: 'minmod', 'superbee', 'vanLeer', 'MC', 'none'
+    limiter_type = 'MC';
+    fprintf('Using %s slope limiter for 2nd order scheme\n\n', limiter_type);
+    
+    %% Solve using both schemes
+    % Run the simulation with f1
+    rho_1st = GodunovOrder1(scenario, Mesh, f);
+    rho_2nd = GodunovOrder2(scenario, Mesh, f, limiter_type);
+    
+    % Run the simulation with the exact flux f2
+    rho_1st_ex = GodunovOrder1(scenario, Mesh, f_ex);
+    rho_2nd_ex = GodunovOrder2(scenario, Mesh, f_ex, limiter_type);
+
+    %% Extracting only the real part and storing in results
+    results.rho_1st     =   real(rho_1st);
+    results.rho_2nd     =   real(rho_2nd);
+    results.rho_1st_ex  =   real(rho_1st_ex);
+    results.rho_2nd_ex  =   real(rho_2nd_ex);
+    results.Mesh        = Mesh;
+    results.scenario = scenario;
+   
+
+end
