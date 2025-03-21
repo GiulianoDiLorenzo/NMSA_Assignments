@@ -28,9 +28,9 @@ set(groot, 'DefaultTextInterpreter', 'latex', ...           % interpreter Latex 
 
 %% Parameters
 L = 1;          % Length of the domain [km]
-T = 15;          % Total simulation time [s]
+T = 5;          % Total simulation time [s]
 Nx = 100;       % Number of spatial cells
-Nt = 100*T;       % Number of time steps
+Nt = 1000*T;       % Number of time steps
 
 rho_max = 1;                % Maximum density  (normalized)
 rho_c = rho_max/2;
@@ -43,8 +43,8 @@ fluxes = setFluxes(rho_max, u_max, plotFlux);
 % saveas(gcf, 'Pictures/Fluxes_graph.png');
 
 % Select scenario - Uncomment the scenario you want to simulate
-% sce = 'Traffic jam';
-sce = 'Green light';
+sce = 'Traffic jam';
+% sce = 'Green light';
 % sce = 'Traffic flow';
 
 
@@ -53,14 +53,20 @@ sce = 'Green light';
 
 %% 3D Plots - Visualize results
 
-drawResults(results);
+drawDensity(results);
+saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.scenario.name, results.Mesh.T));
 
-% Save plots
-% saveas(gcf, sprintf('Pictures/%s full comp %ds.png', scenario.name, Mesh.T));
+
+drawFlux(results, fluxes);
+saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
 
 %% 2D Animation
-animateResults(results, rho_max);
+
+animateDensity(results, rho_max);
+animateFlux(results, rho_max, u_max, fluxes);
+
 
 
 %% Create and save animation as GIF
-makeGIF(results, rho_max);
+makeDensityGIF(results, rho_max);
+makeFluxGIF(results, fluxes);

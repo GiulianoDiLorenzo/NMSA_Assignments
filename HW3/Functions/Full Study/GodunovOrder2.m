@@ -1,4 +1,4 @@
-function rho = GodunovOrder2(scenario, Mesh, f, rho_c, limiter_type)
+function rho = GodunovOrder2(scenario, Mesh, f, rho_c, rho_max, limiter_type)
 % SECOND_ORDER_GODUNOV Solves the traffic flow equation using second-order Godunov scheme
 %
 % Inputs:
@@ -128,6 +128,6 @@ function rho = GodunovOrder2(scenario, Mesh, f, rho_c, limiter_type)
         % 
         % Ensure physical bounds
 
-        rho(:, n+1) = max(0, min(1, rho(:, n+1)));
+        rho(:, n+1) = max(0, min(rho_max, rho(:, n+1)));
     end
 end
