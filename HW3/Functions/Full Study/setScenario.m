@@ -5,30 +5,24 @@ function [scenario] = setScenario(sce, rho_max, rho_c, x, Nx)
     if strcmp(sce, 'Traffic jam')
         scenario.name = "Traffic jam";
         scenario.rho_L = 0.2 * rho_max;
-        scenario.rho_R = rho_max;
-        scenario.rho_0 = zeros(Nx, 1);
-        scenario.rho_0(x < 0.5) = scenario.rho_L;
-        scenario.rho_0(x >= 0.5) = scenario.rho_R;
-        
+        scenario.rho_R = rho_max;        
 
     elseif strcmp(sce, 'Green light')
         scenario.name = "Green light";
         scenario.rho_L = 0.9 * rho_max;
         scenario.rho_R = 0.2 * rho_max;
-        scenario.rho_0 = zeros(Nx, 1);
-        scenario.rho_0(x < 0.5) = scenario.rho_L;
-        scenario.rho_0(x >= 0.5) = scenario.rho_R;
 
     elseif strcmp(sce, 'Traffic flow')
         scenario.name = "Traffic flow";
         scenario.rho_L = rho_max;
-        scenario.rho_R = 0.5 * rho_max;
-        scenario.rho_0 = zeros(Nx, 1);
-        scenario.rho_0(x < 0.5) = scenario.rho_L;
-        scenario.rho_0(x >= 0.5) = scenario.rho_R;
+        scenario.rho_R = rho_max/2;
     end
                
     scenario.rho_c= rho_c;
+
+    scenario.rho_0 = zeros(Nx, 1);
+    scenario.rho_0(x < 0.5) = scenario.rho_L;
+    scenario.rho_0(x >= 0.5) = scenario.rho_R;
 
     if(scenario.rho_L < rho_c)
         fprintf('Information travels Right (-->) on the left part\n');
