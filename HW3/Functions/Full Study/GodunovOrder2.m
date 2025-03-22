@@ -93,7 +93,7 @@ function rho = GodunovOrder2(scenario, Mesh, f, rho_c, rho_max, limiter_type)
         % Step 3: Compute fluxes at all interfaces using Godunov solver
         fluxes = zeros(Nx+1, 1);
         for i = 1:Nx+1
-            fluxes(i) = godunov_flux(rho_interfaces_L(i), rho_interfaces_R(i), f, rho_c);
+            fluxes(i) = computeGodunovFlux(rho_interfaces_L(i), rho_interfaces_R(i), f, rho_c);
             % fluxes(i) = computeFlux1(rho_interfaces_L(i), rho_interfaces_R(i), f);
         end
         

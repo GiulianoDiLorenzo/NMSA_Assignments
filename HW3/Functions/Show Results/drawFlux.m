@@ -1,4 +1,4 @@
-function [] = drawFlux(results, fluxes)
+function [] = drawFlux(results, fluxes, saveMe)
     Mesh        = results.Mesh;
     scenario    = results.scenario;
     % rho_1st     = results.rho_1st;
@@ -87,4 +87,8 @@ function [] = drawFlux(results, fluxes)
     view(0,90);  % Adjust view angle for better visualization
     shading interp; % Smooth color transition
     grid on;
+
+    if saveMe
+        saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
+    end
 end

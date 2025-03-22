@@ -1,4 +1,4 @@
-function [] = drawDensity(results)
+function [] = drawDensity(results, saveMe)
     Mesh        = results.Mesh;
     scenario    = results.scenario;
     rho_1st     = results.rho_1st;
@@ -79,4 +79,8 @@ function [] = drawDensity(results)
     view(0,90);  % Adjust view angle for better visualization
     shading interp; % Smooth color transition
     grid on;
+
+    if saveMe
+        saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.scenario.name, results.Mesh.T));
+    end
 end

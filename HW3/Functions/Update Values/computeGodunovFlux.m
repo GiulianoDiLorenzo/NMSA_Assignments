@@ -1,4 +1,4 @@
-function F = computeFlux(rho_L, rho_R, f)
+function F = computeGodunovFlux(rho_L, rho_R, f, rho_c)
 % GODUNOV_FLUX Computes the Godunov flux at the interface between two states
 %
 % Inputs:
@@ -10,8 +10,6 @@ function F = computeFlux(rho_L, rho_R, f)
 %   F     - Computed Godunov flux
 
     % Find value at which df(rho) = 0 (critical density)
-    rho_c = 0.5;  % For the flux function f(rho) = u_max * (rho - rho^2/rho_max), rho_c = rho_max/2
-    
     if rho_L <= rho_R
         % Rarefaction wave
         if rho_L <= rho_c && rho_c <= rho_R

@@ -52,8 +52,8 @@ function rho = GodunovOrder1(scenario, Mesh, f, rho_c)
             rH = rho_ext(i,n);
             rR = rho_ext(i+1,n);
 
-            fL = godunov_flux(rL, rH, f, rho_c);
-            fR = godunov_flux(rH,rR, f, rho_c);
+            fL = computeGodunovFlux(rL, rH, f, rho_c);
+            fR = computeGodunovFlux(rH,rR, f, rho_c);
             % Update solution
             % rho(i, n+1) = rho(i, n) - dt/dx * (fR - fL);
             rho_ext(i, n+1) = rho_ext(i, n) - dt/dx * (fR - fL);

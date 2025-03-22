@@ -28,43 +28,51 @@ set(groot, 'DefaultTextInterpreter', 'latex', ...           % interpreter Latex 
 
 %% Parameters
 L = 1;          % Length of the domain [km]
-T = 5;          % Total simulation time [s]
+T = 1;          % Total simulation time [s]
 Nx = 100;       % Number of spatial cells
-Nt = 1000*T;       % Number of time steps
+Nt = 500*T;       % Number of time steps
 
 rho_max = 1;                % Maximum density  (normalized)
 rho_c = rho_max/2;
-u_max_km_h = 200 ;           % Maximum velocity in km/h
-u_max = u_max_km_h/3600;    % Maximum velocity km/s ==
+u_max_km_h = 400 ;           % Maximum velocity in km/h
+u_max = u_max_km_h/3600;    % Maximum velocity km/s 
+
+
 %% Define flux function and its derivatives
-% [f1, f2, rho_c_f1, rho_c_f2] = setFluxes(rho_max, u_max, false);
 plotFlux = false;
 fluxes = setFluxes(rho_max, u_max, plotFlux);
 % saveas(gcf, 'Pictures/Fluxes_graph.png');
 
 % Select scenario - Uncomment the scenario you want to simulate
-sce = 'Traffic jam';
-% sce = 'Green light';
+% sce = 'Traffic jam';
+sce = 'Green light';
 % sce = 'Traffic flow';
-
-
 
 [results] = runFullStudy(L,T,Nx,Nt,sce,fluxes);
 
+%% 2D plots - Initial & Final states
+
+drawStartAndStop(results,fluxes, 'density');
+saveas(gcf, sprintf('Pictures/%s density start stop %ds.png', results.scenario.name, results.Mesh.T));
+
+drawStartAndStop(results,fluxes, 'flux');
+saveas(gcf, sprintf('Pictures/%s flux start stop %ds.png', results.scenario.name, results.Mesh.T));
+
+
+
 %% 3D Plots - Visualize results
+saveMe = false;
 
-drawDensity(results);
-saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.scenario.name, results.Mesh.T));
+drawDensity(results, saveMe);
+% saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.sce nario.name, results.Mesh.T));
+drawFlux(results, fluxes, saveMe);
+% saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
 
-
-drawFlux(results, fluxes);
-saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
 
 %% 2D Animation
 
 animateDensity(results, rho_max);
 animateFlux(results, rho_max, u_max, fluxes);
-
 
 
 %% Create and save animation as GIF
