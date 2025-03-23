@@ -54,7 +54,7 @@ sce = 'Green light';
 
 drawStartAndStop(results,fluxes, 'density');
 saveas(gcf, sprintf('Pictures/%s density start stop %ds.png', results.scenario.name, results.Mesh.T));
-
+%%
 drawStartAndStop(results,fluxes, 'flux');
 saveas(gcf, sprintf('Pictures/%s flux start stop %ds.png', results.scenario.name, results.Mesh.T));
 
@@ -64,9 +64,9 @@ saveas(gcf, sprintf('Pictures/%s flux start stop %ds.png', results.scenario.name
 saveMe = false;
 
 drawDensity(results, saveMe);
-% saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.sce nario.name, results.Mesh.T));
+saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.scenario.name, results.Mesh.T));
 drawFlux(results, fluxes, saveMe);
-% saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
+saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
 
 
 %% 2D Animation
