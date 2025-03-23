@@ -1,4 +1,4 @@
-function [] = drawStartAndStop(results, fluxes, target)
+function [] = drawStartAndStop(results, fluxes, target, saveMe)
     Mesh        = results.Mesh;
     scenario    = results.scenario;
 
@@ -62,15 +62,6 @@ function [] = drawStartAndStop(results, fluxes, target)
             title ('$f(\rho) = \rho \log(\rho_{max} / \rho)$');
         
             ylim([0, 1.1*rho_max]);
-    
-            % legend([p1, p2, p3, p4, p5, p6], ...
-            %        {'1st order scheme, $t=0s$', ...
-            %         '1st order scheme, $t=T/2$ s', ...
-            %         '1st order scheme, $t=T$ s', ...
-            %         '2nd order scheme, $t=0s$', ...
-            %         '2nd order scheme, $t=T/2$ s', ...
-            %         '2nd order scheme, $t=T$ s'}, ...
-            %         'Location', 'best');
     
 
      %% Plotting Flux        
@@ -147,6 +138,9 @@ function [] = drawStartAndStop(results, fluxes, target)
         error('Unrecognized target, select density or flux');
     end
 
+    if saveMe
+        saveas(gcf, sprintf('Pictures/%s %s start stop %ds.png', results.scenario.name, target, results.Mesh.T));
+    end
     
     
     

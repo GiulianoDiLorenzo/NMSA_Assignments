@@ -18,7 +18,7 @@ function [] = makeFluxGIF(results, fluxes)
     fps = 24;
     fps_scaled = round(fps* (-Mesh.T/18 + 19/18));
     num_frames = fps_scaled * Mesh.T;
-    t = floor(linspace(1, size(flux_1st, 2), num_frames));
+    t = floor(linspace(1, results.Mesh.Nt+1, num_frames));
     
     % Create Pictures subfolder if it doesn't exist
     picturesFolder = fullfile('GIFs');
@@ -28,7 +28,6 @@ function [] = makeFluxGIF(results, fluxes)
     
     % Set file path and name
     filename = fullfile(picturesFolder, sprintf('%s flux animation %ds.gif', scenario.name, Mesh.T));
-    
     
     filename = sprintf('GIFs/%s flux animation %ds.gif', scenario.name, Mesh.T);
     figure('Position', [100 100 800 600]);  % Set figure size for better quality

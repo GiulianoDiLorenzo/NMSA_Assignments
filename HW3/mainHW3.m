@@ -51,29 +51,21 @@ sce = 'Green light';
 [results] = runFullStudy(L,T,Nx,Nt,sce,fluxes);
 
 %% 2D plots - Initial & Final states
+saveMe = false;
 
-drawStartAndStop(results,fluxes, 'density');
-saveas(gcf, sprintf('Pictures/%s density start stop %ds.png', results.scenario.name, results.Mesh.T));
-%%
-drawStartAndStop(results,fluxes, 'flux');
-saveas(gcf, sprintf('Pictures/%s flux start stop %ds.png', results.scenario.name, results.Mesh.T));
-
+drawStartAndStop(results,fluxes, 'density', saveMe);
+drawStartAndStop(results,fluxes, 'flux', saveMe);
 
 
 %% 3D Plots - Visualize results
 saveMe = false;
 
-drawDensity(results, saveMe);
-saveas(gcf, sprintf('Pictures/%s density comp %ds.png', results.scenario.name, results.Mesh.T));
-drawFlux(results, fluxes, saveMe);
-saveas(gcf, sprintf('Pictures/%s flux comp %ds.png', results.scenario.name, results.Mesh.T));
-
+drawResults(results, fluxes, 'density', saveMe);
+drawResults(results, fluxes, 'flux', saveMe);
 
 %% 2D Animation
-
-animateDensity(results, rho_max);
-animateFlux(results, rho_max, u_max, fluxes);
-
+animateResults(results, fluxes, 'density');
+animateResults(results, fluxes, 'flux');
 
 %% Create and save animation as GIF
 makeDensityGIF(results, rho_max);
