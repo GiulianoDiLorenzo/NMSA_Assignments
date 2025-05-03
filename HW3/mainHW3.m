@@ -45,8 +45,8 @@ fluxes = setFluxes(rho_max, u_max, plotFlux);
 
 % Select scenario - Uncomment the scenario you want to simulate
 % sce = 'Traffic jam';
-sce = 'Green light';
-% sce = 'Traffic flow';
+% sce = 'Green light';
+sce = 'Traffic flow';
 
 [results] = runFullStudy(L,T,Nx,Nt,sce,fluxes);
 
@@ -68,5 +68,5 @@ animateResults(results, fluxes, 'density');
 animateResults(results, fluxes, 'flux');
 
 %% Create and save animation as GIF
-makeDensityGIF(results, rho_max);
-makeFluxGIF(results, fluxes);
+% makeDensityGIF(results, rho_max);
+% makeFluxGIF(results, fluxes);
