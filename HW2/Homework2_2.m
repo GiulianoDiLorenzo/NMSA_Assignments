@@ -286,13 +286,13 @@ ylabel("$e$");
 grid on
 hold on
 loglog(Dt./T*100, e_L2_var, '-o');
-legend("Constant profile, p = " + round(p_time_avg), "Variable profile, p = " + round(p_time_var_avg));
+legend("Constant profile", "Variable profile");
 
 %% Looping with different NX, keeping NT
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NX, keeps NT and evaluates the L2-error
 
-NT = T*10000;       % (500)=1% of time domain
+NT = T*100;       % (500)=1% of time domain
 NX = round(NT * (linspace(1, 20, 20)/100));
 
 dt = T/(NT-1);
@@ -351,4 +351,4 @@ ylabel("$e$");
 grid on
 hold on
 loglog(Dx./L*100, e_L2_var, '-o');
-legend("Constant profile, p = " + round(p_space_avg), "Variable profile, p = " + round(p_space_var_avg));
+legend("Constant profile", "Variable profile");
