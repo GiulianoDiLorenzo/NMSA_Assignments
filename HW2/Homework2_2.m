@@ -227,8 +227,8 @@ end
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NT, keeps NX and evaluates the L2-error
 
-NX = 100;       % (100)=1% of space domain
-NT = NX * round(linspace(5, 25, 20));
+NX = L*100;       % (100)=1% of space domain
+NT = NX * round(linspace(1, 20, 20));
 
 dx = L/(NX-1);
 x = linspace(0, L, NX).';
@@ -263,11 +263,12 @@ for i = 1:length(NT)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX, NT(i), dt, u_0, u_1, lambda, f);
-    e_L2(i) = mean(sqrt(sum((sol - uex).^2, dim) * dx));
+    %e_L2(i) = mean(sqrt(sum((sol - uex).^2, dim) * dx));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt);
   
     sol_var = computeSolutionVariable(NX, NT(i), dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = mean(sqrt(sum((sol_var - uex).^2, dim) * dx));
-
+    %e_L2_var(i) = mean(sqrt(sum((sol_var - uex).^2, dim) * dx));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt);
 end
 
 % scheme convergence
@@ -278,20 +279,20 @@ p_time_var_avg = sum(p_time_var)/length(p_time_var);
 
 % printing norm errors in function of dt
 figure()
-plot(log(Dt), log(e_L2), '-o');
-title("Error convergence with time ($N_X$ = " + NX + ")");
-xlabel("$\log(\Delta t)$");
-ylabel("$\log(e)$");
+loglog(Dt./T*100, e_L2, '-o');
+title("Error convergence with time ($\Delta x/L$ = " + round(dx/L, 6)*100 + "\%)");
+xlabel("$\Delta t/T \ [\%]$");
+ylabel("$e$");
 grid on
 hold on
-plot(log(Dt), log(e_L2_var), '-o');
+loglog(Dt./T*100, e_L2_var, '-o');
 legend("Constant profile, p = " + round(p_time_avg), "Variable profile, p = " + round(p_time_var_avg));
 
 %% Looping with different NX, keeping NT
 % this block loops the computation for both constant and variable profile S(x)
 % takes different NX, keeps NT and evaluates the L2-error
 
-NT = 500;       % (500)=1% of time domain
+NT = T*10000;       % (500)=1% of time domain
 NX = round(NT * (linspace(1, 20, 20)/100));
 
 dt = T/(NT-1);
@@ -327,11 +328,12 @@ for i = 1:length(NX)
     f_var = S .* utt - gamma^2 .* (Sx .* ux + S .* uxx);
     
     sol = computeSolutionConstant(NX(i), NT, dt, u_0, u_1, lambda, f);
-    e_L2(i) = mean(sqrt(sum((sol - uex).^2, dim) * dt));
+    %e_L2(i) = mean(sqrt(sum((sol - uex).^2, dim) * dt));
+    e_L2(i) = sqrt(sum(sum((sol - uex).^2)) * dx * dt);
     
     sol_var = computeSolutionVariable(NX(i), NT, dx, dt, S, u_0, u_1, lambda, f_var);
-    e_L2_var(i) = mean(sqrt(sum((sol_var - uex).^2, dim) * dt));
-
+    %e_L2_var(i) = mean(sqrt(sum((sol_var - uex).^2, dim) * dt));
+    e_L2_var(i) = sqrt(sum(sum((sol_var - uex).^2)) * dx * dt);
 end
 
 % scheme convergence
@@ -342,12 +344,11 @@ p_space_var_avg = sum(p_space_var)/length(p_space_var);
 
 % printing norm errors in function of dx
 figure()
-plot(log(Dx), log(e_L2), '-o');
-title("Error convergence with space ($N_T$ = " + NT + ")");
-xlabel("$\log(\Delta x)$");
-ylabel("$\log(e)$");
+loglog(Dx./L*100, e_L2, '-o');
+title("Error convergence with space ($\Delta t/T$ = " + round(dt/T, 6)*100 + "\%)");
+xlabel("$\Delta x/L \ [\%]$");
+ylabel("$e$");
 grid on
 hold on
-plot(log(Dx), log(e_L2_var), '-o');
-legend("Constant profile", "Variable profile");
+loglog(Dx./L*100, e_L2_var, '-o');
 legend("Constant profile, p = " + round(p_space_avg), "Variable profile, p = " + round(p_space_var_avg));
